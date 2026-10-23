@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post-Mortem PRN Negeri Johor 2026 — Laporan Rasmi</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --navy:#0b1f3a;
+  --navy2:#132c52;
+  --gold:#b8902e;
+  --gold-light:#e8c766;
+  --bn-blue:#1c4f9c;
+  --ph-red:#c0392b;
+  --pn-green:#1e7a4a;
+  --bersama-purple:#7a4fa3;
+  --bg:#f7f5f0;
+  --paper:#ffffff;
+  --ink:#1b1f27;
+  --muted:#5b6472;
+  --line:#e3e0d6;
+  --up:#1e7a4a;
+  --down:#c0392b;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  line-height:1.62;
+}
+h1,h2,h3,h4{font-family:Georgia,'Times New Roman',serif; color:var(--navy); line-height:1.25;}
+a{color:var(--bn-blue);}
+.layout{display:flex; min-height:100vh;}
+nav.toc{
+  width:280px; flex:0 0 280px; background:var(--navy); color:#dfe6f0;
+  position:sticky; top:0; height:100vh; overflow-y:auto; padding:22px 16px 60px;
+}
+nav.toc .brand{font-family:Georgia,serif; font-size:15px; color:var(--gold-light); border-bottom:1px solid #24406c; padding-bottom:14px; margin-bottom:14px;}
+nav.toc .brand b{display:block; font-size:19px; color:#fff;}
+nav.toc a{display:block; color:#c7d2e3; text-decoration:none; font-size:12.5px; padding:5px 8px; border-radius:4px; margin-bottom:1px;}
+nav.toc a:hover{background:#1c3a66; color:#fff;}
+nav.toc .grp{color:#7f93b8; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; margin:14px 0 4px 8px;}
+main{flex:1; min-width:0;}
+.cover{
+  background:linear-gradient(135deg,var(--navy) 0%, var(--navy2) 55%, #1c3a66 100%);
+  color:#fff; padding:64px 56px 48px;
+  border-bottom:6px solid var(--gold);
+}
+.cover .kicker{color:var(--gold-light); letter-spacing:.12em; text-transform:uppercase; font-size:13px; margin-bottom:14px;}
+.cover h1{color:#fff; font-size:40px; margin:0 0 10px;}
+.cover .sub{color:#cfd8e8; font-size:16px; max-width:820px;}
+.cover .meta{display:flex; gap:28px; flex-wrap:wrap; margin-top:26px; font-size:13px; color:#dfe6f0;}
+.cover .meta div{border-left:2px solid var(--gold); padding-left:10px;}
+.cover .meta b{display:block; color:#fff; font-size:14px;}
+.section{padding:36px 56px; max-width:1180px;}
+.section h2{font-size:26px; border-bottom:3px solid var(--gold); padding-bottom:10px; margin-bottom:6px;}
+.section h2 .num{color:var(--gold); margin-right:10px;}
+.section h3{font-size:18px; margin-top:28px; color:var(--navy2);}
+.section h4{font-size:15px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;}
+.lede{font-size:15.5px; color:var(--muted); max-width:900px; margin-bottom:18px;}
+p{max-width:900px;}
+.callout{
+  background:#fbf6e8; border-left:4px solid var(--gold); padding:14px 18px; margin:18px 0;
+  max-width:900px; font-size:14.5px;
+}
+.callout.blue{background:#eef3fb; border-left-color:var(--bn-blue);}
+.callout.red{background:#fbecea; border-left-color:var(--ph-red);}
+.callout.warn{background:#fff4e5; border-left-color:#c77500;}
+table{border-collapse:collapse; width:100%; margin:16px 0 22px; font-size:13.3px; background:var(--paper);}
+table.narrow{max-width:760px;}
+th,td{border:1px solid var(--line); padding:7px 10px; text-align:left;}
+th{background:var(--navy); color:#fff; font-weight:600; font-size:12.6px;}
+tr:nth-child(even) td{background:#faf9f5;}
+td.num,th.num{text-align:right; font-variant-numeric:tabular-nums;}
+.tag{display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; color:#fff;}
+.tag.bn{background:var(--bn-blue);}
+.tag.ph{background:var(--ph-red);}
+.tag.pn{background:var(--pn-green);}
+.tag.bersama{background:var(--bersama-purple);}
+.tag.kekal{background:#5b6472;}
+.tag.tukar{background:#c77500;}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:24px; max-width:1100px;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; max-width:1100px;}
+.kpi{background:var(--paper); border:1px solid var(--line); border-top:4px solid var(--gold); padding:14px 16px; border-radius:4px;}
+.kpi .v{font-size:26px; font-weight:700; color:var(--navy);}
+.kpi .l{font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em;}
+.kpi .d{font-size:12px; margin-top:4px;}
+.kpi .d.up{color:var(--up);} .kpi .d.down{color:var(--down);}
+.chart-box{background:var(--paper); border:1px solid var(--line); border-radius:6px; padding:18px; margin:18px 0; max-width:900px; height:380px; position:relative; box-sizing:border-box;}
+.two-charts{display:grid; grid-template-columns:1fr 1fr; gap:20px; max-width:1100px;}
+.source-tag{font-size:11px; color:#fff; background:var(--muted); padding:1px 7px; border-radius:8px; margin-left:6px; font-weight:600;}
+.source-tag.obs{background:#2e6b3e;}
+.source-tag.est{background:#a5720f;}
+.source-tag.sim{background:#5b4b9e;}
+.source-tag.survey{background:#0f6e6e;}
+.footnote{font-size:12px; color:var(--muted); max-width:900px;}
+.heat{font-weight:700; color:#fff; text-align:center;}
+ul,ol{max-width:880px;}
+li{margin-bottom:5px;}
+.divider{height:1px; background:var(--line); margin:26px 0; max-width:900px;}
+footer.rpt{background:var(--navy); color:#9fb0cc; padding:30px 56px; font-size:12px;}
+.swot{display:grid; grid-template-columns:1fr 1fr; gap:14px; max-width:1000px;}
+.swot > div{padding:16px; border-radius:6px;}
+.swot .s{background:#eaf4ec; border:1px solid #bcdcc4;}
+.swot .w{background:#fbecea; border:1px solid #f0c4bd;}
+.swot .o{background:#eef3fb; border:1px solid #c3d6f0;}
+.swot .t{background:#fff4e5; border:1px solid #f0d6a8;}
+@media print{ nav.toc{display:none;} .layout{display:block;} }
+
+/* ===== Mesra Telefon Pintar (Responsive) ===== */
+.toc-toggle{
+  display:none; width:100%; text-align:left; background:#132c52; color:#fff; border:none;
+  padding:14px 16px; font-size:15px; font-weight:700; cursor:pointer; align-items:center; gap:10px;
+}
+.toc-toggle .bars{font-size:18px; line-height:1;}
+@media (max-width: 900px){
+  .layout{flex-direction:column;}
+  nav.toc{
+    position:relative; top:auto; width:100%; flex:none; height:auto;
+    max-height:56px; overflow:hidden; padding:0; transition:max-height .25s ease;
+  }
+  nav.toc.open{max-height:2600px;}
+  nav.toc .brand{display:none;}
+  nav.toc .links{padding:6px 12px 18px;}
+  .toc-toggle{display:flex;}
+  main{width:100%;}
+  .cover{padding:34px 20px 26px;}
+  .cover h1{font-size:26px;}
+  .cover .sub{font-size:14px;}
+  .cover .meta{gap:14px 22px;}
+  .section{padding:24px 18px;}
+  .section h2{font-size:21px;}
+  .grid3,.grid2,.two-charts,.swot{grid-template-columns:1fr;}
+  table{display:block; overflow-x:auto; white-space:nowrap; -webkit-overflow-scrolling:touch;}
+  th,td{font-size:12px; padding:6px 8px;}
+  .chart-box{padding:12px; max-width:100%; height:290px;}
+  footer.rpt{padding:24px 18px;}
+  p,.lede,.callout,ul,ol,.footnote{max-width:100%;}
+}
+@media (max-width: 480px){
+  .cover h1{font-size:22px;}
+  .kpi .v{font-size:21px;}
+  .section{padding:18px 14px;}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc" id="tocNav">
+  <div class="brand"><b>PRN Johor 2026</b>Laporan Post-Mortem Rasmi</div>
+  <button type="button" class="toc-toggle" id="tocToggleBtn"><span class="bars">☰</span> <span id="tocToggleLabel">Kandungan / Menu</span></button>
+  <div class="links">
+  <a href="#exec">01 · Executive Summary</a>
+  <a href="#latar">02 · Latar Belakang</a>
+  <a href="#ilham">02A · Ramalan Pra-PRN (ILHAM Centre)</a>
+  <a href="#ringkasan">03 · Ringkasan Keputusan <a href="keputusanprnjohor2026.html" target="_blank">(Keputusan Penuh Di Sini)</a>
+  <a href="#parti">04 · Analisis Mengikut Parti</a>
+  <a href="#dun">05 · Analisis Mengikut DUN</a>
+  <a href="#parlimen">06 · Analisis Mengikut Parlimen</a>
+  <a href="#demografi">07 · Demografi Pengundi</a>
+  <a href="#turnout">08 · Turnout Pengundi</a>
+  <a href="#swing">09 · Peralihan Undi (Swing)</a>
+  <a href="#kaum">10 · Prestasi Mengikut Kaum</a>
+  <a href="#geografi">11 · Bandar / Separa Bandar / Luar Bandar</a>
+  <a href="#sentimen">12 · Media Sosial &amp; Sentimen</a>
+  <a href="#menang-bn">13 · Faktor Kemenangan BN</a>
+  <a href="#kalah-ph">14 · Faktor Kekalahan PH</a>
+  <a href="#kalah-amanah">15 · Faktor Kekalahan Amanah</a>
+  <a href="#calon">16 · Prestasi Calon</a>
+  <a href="#jentera">17 · Prestasi Jentera Parti</a>
+  <a href="#strategi-kempen">18 · Strategi Kempen</a>
+  <a href="#isu-tempatan">19 · Isu-isu Tempatan</a>
+  <a href="#isu-nasional">20 · Isu Nasional</a>
+  <a href="#banding2022">21 · Banding PRN 2022</a>
+  <a href="#banding-lain">22 · Banding PRU Sebelum Ini</a>
+  <a href="#dapatan">23 · Dapatan Utama</a>
+  <a href="#corak">24 · Corak Pengundian</a>
+  <a href="#trend">25 · Trend Baharu Pengundi</a>
+  <a href="#rca">26 · Root Cause Analysis</a>
+  <a href="#swot">27 · SWOT Analysis</a>
+  <a href="#pestle">28 · PESTLE Analysis</a>
+  <a href="#5whys">29 · Five Whys Analysis</a>
+  <a href="#lessons">30 · Lessons Learned</a>
+  <a href="#cadangan1">31 · Cadangan Penambahbaikan</a>
+  <a href="#cadangan2">32 · Cadangan Strategi PRU</a>
+  <a href="#kesimpulan">33 · Kesimpulan</a>
+  <a href="#metodologi">Lampiran · Nota Kaedah</a>
+  <a href="#sumber">Sumber &amp; Rujukan</a>
+  </div>
+</nav>
+<main>
+
+<div class="cover">
+  <div class="kicker">PH Political Intelligence Hub · Johor · Negeri Sembilan · Melaka</div>
+  <h1>Post-Mortem PRN-16 Negeri Johor 2026</h1>
+  <div class="sub">Laporan rujukan utama — gabungan, penyusunan, analisis dan sintesis penuh keputusan Pilihan Raya Negeri Johor ke-16, disediakan untuk kegunaan strategik Pakatan Harapan menghadapi PRN Negeri Sembilan (1 Ogos 2026) dan Melaka.</div>
+  <div class="meta">
+    <div><b>Hari Mengundi</b>11 Julai 2026 (Sabtu)</div>
+    <div><b>Kerusi Dipertandingkan</b>56 DUN</div>
+    <div><b>Keputusan Disahkan</b>11–12 Julai 2026</div>
+    <div><b>Laporan disediakan</b>Oleh: OrenIT Amanah Nasional, 13 Julai 2026, Lead: Dr. Zaipul Anwar</div>
+    <div><b>Sumber</b>SPR Rasmi · pilihanraya.my · iprom.org · ILHAM Centre · Media Sosial</div>
+  </div>
+</div>
+
+<!-- 01 EXECUTIVE SUMMARY -->
+<section class="section" id="exec">
+<h2><span class="num">01</span>Executive Summary</h2>
+<p class="lede">Barisan Nasional (BN) meraih kemenangan paling besar di Johor sejak 2008, memenangi 48 daripada 56 kerusi DUN (85.7%) berbanding 40 kerusi pada 2022. Pakatan Harapan (PH) tinggal dengan 8 kerusi (14.3%), manakala Perikatan Nasional (PN) — yang memegang 3 kerusi sebelum ini — disapu bersih tanpa satu kerusi pun. Keluar mengundi melonjak 15 mata peratus kepada 69.6%, lonjakan terbesar bagi mana-mana PRN dalam sejarah Johor.</p>
+
+<div class="grid3">
+  <div class="kpi"><div class="v">48 / 56</div><div class="l">Kerusi BN</div><div class="d up">▲ +8 kerusi berbanding 2022</div></div>
+  <div class="kpi"><div class="v">8 / 56</div><div class="l">Kerusi PH</div><div class="d down">▼ −4 kerusi berbanding 2022</div></div>
+  <div class="kpi"><div class="v">0 / 56</div><div class="l">Kerusi PN</div><div class="d down">▼ Hilang kesemua 3 kerusi 2022</div></div>
+  <div class="kpi"><div class="v">69.6%</div><div class="l">Keluar Mengundi</div><div class="d up">▲ +15.0 mata peratus</div></div>
+  <div class="kpi"><div class="v">59.7%</div><div class="l">% Undi BN</div><div class="d up">Kerusi 85.7% — melebihi % undi</div></div>
+  <div class="kpi"><div class="v">32.6%</div><div class="l">% Undi PH</div><div class="d">Undi tambah +196k, kerusi jatuh</div></div>
+</div>
+
+<h3>Empat dapatan teras</h3>
+<ol>
+<li><b>Enjin kemenangan BN ialah keruntuhan PN, bukan gelombang sokongan baharu kepada BN.</b> PN kehilangan lebih dua pertiga undinya — daripada 334,457 (24.0%, 2022) kepada 102,090 (5.45%, 2026), kehilangan bersih 232,367 undi. Model statistik (inferens ekologi) menganggarkan 187,000–232,000 daripada tambahan undi BN (36–45%, anggaran pusat ~42%) berasal daripada takungan bekas penyokong PN.</li>
+<li><b>Undi PH sebenarnya naik — bertambah kira-kira 196,000–244,000 undi (+47% hingga +88% mengikut komponen/definisi) berbanding 2022 — tetapi kerusi jatuh daripada 12 ke 8 (asas 13 jika kerusi MUDA 2022 disertakan).</b> Ini berlaku kerana jumlah undi sah negeri berkembang 34.8%; kek membesar lebih pantas daripada bahagian PH.</li>
+<li><b>Lonjakan keluar mengundi terbesar datang daripada pengundi bukan Melayu</b> menurut anggaran ekologi (Cina +17.0 mata, India &amp; lain +30.5 mata, Melayu +10.8 mata) — bermakna BN menang 48 kerusi <i>walaupun</i> corak keluar mengundi menyebelahi PH dari segi komposisi, bukan kerana itu. Namun turnout Cina yang dicapai (~59–62%) tetap gagal mencecah ambang ~65% yang dikenal pasti kritikal oleh tinjauan pra-pilihan raya ILHAM Centre — lihat Seksyen 02A.</li>
+<li><b>BERSAMA (serpihan PKR) meraih 28,816 undi (1.54%) di 15 kerusi — kesemua 15 calon hilang wang pertaruhan</b> — tetapi kehadirannya berkemungkinan menentukan dua kerusi paling tipis (Perling dan Bukit Batu).</li>
+</ol>
+
+<div class="callout">
+<b>Nota integriti data:</b> Laporan ini menggabungkan lima sumber — laporan naratif <i>pilihanraya.my</i> (Bahasa Malaysia), lampiran teknikal <i>pilihanraya.my</i> (model statistik, Bahasa Inggeris), dashboard data rasmi <i>iprom.org</i> (disediakan oleh Dr. Zaipul Anwar, OrenIT Amanah Nasional), tinjauan lapangan pra-pilihan raya <i>ILHAM Centre</i> (kaji selidik &amp; kualitatif, 26 Jun–9 Jul 2026), dan hantaran media sosial Muhamad Harris Nasril (naratif/sentimen). Setiap angka dilabel mengikut kelas: <span class="source-tag obs">PEMERHATIAN</span> (keputusan rasmi SPR), <span class="source-tag est">ANGGARAN</span> (inferens statistik daripada agregat 56 kerusi — bukan ukuran langsung tingkah laku individu pengundi), <span class="source-tag sim">SIMULASI</span> (tetapan model), dan <span class="source-tag survey">TINJAUAN PRA-PRN</span> (kaji selidik/FGD/IDI ILHAM Centre sebelum hari mengundi — dapatan tingkah laku dan sentimen, bukan keputusan sebenar). Latar belakang pilihan raya (tarikh pembubaran, penamaan calon) disahkan menerusi carian tambahan kerana tidak disediakan lengkap oleh sumber asal.</div>
+
+<div class="callout blue">
+<b>Nota mengenai sumber ILHAM Centre:</b> Laporan ILHAM Centre ("PRN Johor 2026: BN Melepasi Dua Pertiga Majoriti") diterbitkan <i>sebelum</i> hari mengundi (dapatan lapangan 26 Jun – 9 Julai 2026) dan meramalkan BN mendahului 39 kerusi, PH 9 kerusi, dengan 8 kerusi sengit — <b>bukan</b> keputusan 48-8-0 sebenar. Walaupun unjuran bilangan kerusi ILHAM meremehkan margin kemenangan sebenar BN, laporan ini amat bernilai kerana ia satu-satunya sumber dalam kajian ini yang berasaskan tinjauan lapangan langsung (n=1,250 responden, 9 FGD/76 informan, 18 temu bual mendalam, ralat 2.77%) — menyediakan <i>penjelasan sebab-musabab kualitatif</i> (mengapa) yang melengkapi penemuan statistik pasca-pilihan raya (apa) daripada pilihanraya.my. Lihat Seksyen 02A untuk rawatan penuh, termasuk perbandingan ramalan-lawan-sebenar bagi lapan kerusi sengit yang dikenal pasti ILHAM.</div>
+</section>
+
+<!-- 02 LATAR BELAKANG -->
+<section class="section" id="latar">
+<h2><span class="num">02</span>Latar Belakang PRN Johor 2026</h2>
+<p>Dewan Undangan Negeri (DUN) Johor ke-15 dibubarkan pada <b>1 Jun 2026 (Isnin)</b> oleh Menteri Besar Onn Hafiz bin Ghazi, dengan persetujuan Sultan Johor/Yang di-Pertuan Agong Sultan Ibrahim Iskandar. Di bawah peruntukan perlembagaan, pilihan raya negeri perlu diadakan dalam tempoh 60 hari daripada tarikh pembubaran.</p>
+
+<table class="narrow">
+<tr><th>Peristiwa</th><th>Tarikh</th></tr>
+<tr><td>Pembubaran DUN Johor</td><td>1 Jun 2026 (Isnin)</td></tr>
+<tr><td>Hari Penamaan Calon</td><td>27 Jun 2026 (Sabtu)</td></tr>
+<tr><td>Tempoh Kempen</td><td>14 hari (27 Jun – 11:59 malam, 10 Julai 2026)</td></tr>
+<tr><td>Hari Undi Awal</td><td>7 Julai 2026 (Selasa)</td></tr>
+<tr><td>Hari Mengundi</td><td>11 Julai 2026 (Sabtu)</td></tr>
+<tr><td>Keputusan Rasmi Disahkan</td><td>11–12 Julai 2026</td></tr>
+</table>
+
+<p>Sebanyak <b>172 calon</b> bertanding merentasi 56 kerusi DUN (purata 3.1 calon/kerusi, berbanding 4.3 pada 2022). PRN ini merupakan pilihan raya negeri pertama selepas PRU15 (November 2022) dan PRN Melaka/Johor sebelumnya, dan menjadi penanda aras awal kepada dua PRN berikutnya — Negeri Sembilan (1 Ogos 2026) dan Melaka. Johor ditadbir oleh kerajaan BN pimpinan Onn Hafiz bin Ghazi sejak PRN15 (Mac 2022), apabila BN memenangi 40 kerusi ketika itu.</p>
+<p class="footnote">Sumber: carian tambahan (Bernama, The Star, NST, FMT, Bloomberg, Malaysiakini, Wikipedia BM) kerana tarikh pembubaran dan penamaan calon tidak dinyatakan lengkap dalam sumber asal yang diberikan.</p>
+</section>
+
+<!-- 02A ILHAM CENTRE -->
+<section class="section" id="ilham">
+<h2><span class="num">02A</span>Ramalan Pra-PRN: Dapatan Lapangan ILHAM Centre</h2>
+<p class="lede">Sumber tambahan ini — laporan <i>"PRN Johor 2026: BN Melepasi Dua Pertiga Majoriti"</i> oleh ILHAM Centre — diterbitkan <b>sebelum</b> hari mengundi berdasarkan kajian lapangan bersepadu (kuantitatif + kualitatif). Ia disertakan bukan sebagai keputusan, tetapi sebagai <span class="source-tag survey">TINJAUAN PRA-PRN</span> yang menerangkan mekanisme sebab-musabab (tingkah laku, sentimen, persepsi pengundi) di sebalik angka yang kemudiannya disahkan oleh keputusan rasmi.</p>
+
+<h3>Metodologi Kajian</h3>
+<table class="narrow">
+<tr><th>Perkara</th><th>Butiran</th></tr>
+<tr><td>Tempoh Kajian Lapangan</td><td>26 Jun – 9 Julai 2026</td></tr>
+<tr><td>Kaedah Kuantitatif</td><td>Kaji selidik tatap muka, persampelan rawak berstrata merentasi 56 DUN (kaum, jantina, umur, pendidikan, pendapatan, pekerjaan, lokaliti)</td></tr>
+<tr><td>Saiz Sampel</td><td>1,250 responden</td></tr>
+<tr><td>Kaedah Kualitatif</td><td>9 Perbincangan Kumpulan Fokus (FGD) — 76 informan; 18 Temu Bual Mendalam (IDI)</td></tr>
+<tr><td>Analisis Tambahan</td><td>Analisis statistik scoresheet PRN Johor 2022 &amp; PRU-15 2022 (Johor)</td></tr>
+<tr><td>Ralat Kajian (MOE)</td><td>2.77%</td></tr>
+<tr><td>Panel Penyelidik</td><td>Hisommudin Bakar (Pengarah Eksekutif); Prof. Madya Dr. Mohd Yusri Ibrahim (Ketua Penyelidikan); Mohd Azlan Zainal (Ketua Operasi); Mohd Jalaluddin Hashim (Ketua Analitik); Mujibu Abd Muis (Felo Penyelidik)</td></tr>
+</table>
+
+<h3>Ramalan ILHAM Berbanding Keputusan Sebenar</h3>
+<table class="narrow">
+<tr><th>Kategori</th><th class="num">Ramalan ILHAM (pra-PRN)</th><th class="num">Keputusan Sebenar</th><th>Nota</th></tr>
+<tr><td>Kerusi BN</td><td class="num">39 (mendahului)</td><td class="num">48</td><td class="num down">Diremehkan 9 kerusi</td></tr>
+<tr><td>Kerusi PH</td><td class="num">9 (mendahului)</td><td class="num">8</td><td class="num">Hampir tepat (−1)</td></tr>
+<tr><td>Kerusi Sengit/Belum Pasti</td><td class="num">8</td><td class="num">—</td><td>Kesemua 8 kerusi sengit akhirnya jatuh — lihat jadual di bawah</td></tr>
+</table>
+<div class="callout">ILHAM secara eksplisit meramalkan BN "berpotensi melepasi majoriti dua pertiga" — tepat dari segi <i>arah</i> keputusan, namun <b>meremehkan magnitud sebenar</b> margin kemenangan BN (39 berbanding 48 kerusi sebenar). Ini sejajar dengan dapatan lampiran teknikal pilihanraya.my (Lampiran · Nota Kaedah) bahawa 71% daripada kumpulan peramal paling yakin (86–100) hanya merealisasikan ketepatan 84.1 — corak sistemik keseluruhan medan peramal (termasuk ILHAM) meremehkan skala kemenangan BN, bukan salah arah.</div>
+
+<h3>Lapan Kerusi Sengit ILHAM (Pra-PRN) — Semak Silang Keputusan Sebenar</h3>
+<table>
+<tr><th>DUN</th><th>Status ILHAM (Pra-PRN)</th><th>Pemenang Sebenar</th><th class="num">Majoriti Sebenar</th></tr>
+<tr><td>N.05 Tenang</td><td>Sengit</td><td><span class="tag bn">BN</span></td><td class="num">3,394 (23.3%)</td></tr>
+<tr><td>N.10 Tangkak</td><td>Sengit</td><td><span class="tag bn">BN</span> (bertukar drpd PH)</td><td class="num">3,182 (12.8%)</td></tr>
+<tr><td>N.15 Maharani</td><td>Sengit</td><td><span class="tag bn">BN</span> (bertukar drpd PN)</td><td class="num">2,143 (7.9%)</td></tr>
+<tr><td>N.27 Layang-Layang</td><td>Sengit</td><td><span class="tag bn">BN</span></td><td class="num">7,912 (45.9%)</td></tr>
+<tr><td>N.41 Puteri Wangsa</td><td>Sengit</td><td><span class="tag ph">PH</span> (bertukar drpd MUDA)</td><td class="num">5,744 (6.7%)</td></tr>
+<tr><td>N.42 Johor Jaya</td><td>Sengit</td><td><span class="tag bn">BN</span> (bertukar drpd PH)</td><td class="num">7,268 (10.9%)</td></tr>
+<tr><td>N.49 Kota Iskandar</td><td>Sengit</td><td><span class="tag bn">BN</span></td><td class="num">21,206 (23.4%)</td></tr>
+<tr><td>N.51 Bukit Batu</td><td>Sengit</td><td><span class="tag bn">BN</span> (bertukar drpd PH)</td><td class="num">174 (0.5%)</td></tr>
+</table>
+<p>Daripada 8 kerusi sengit yang dikenal pasti ILHAM sebelum pengundian, <b>7 akhirnya jatuh ke tangan BN</b> dan hanya 1 (Puteri Wangsa) kekal/beralih kepada PH — mengesahkan tepat penilaian ILHAM bahawa ketiga-tiga pemboleh ubah yang mereka kenal pasti (turnout Cina/Melayu, limpahan undi PN, pengundi belum membuat keputusan) akhirnya "jatuh" menyebelahi BN secara meluas, termasuk di 4 daripada 9 kerusi yang bertukar tangan dalam keseluruhan PRN (Tangkak, Maharani, Johor Jaya, Bukit Batu — lihat Seksyen 05).</p>
+
+<h3>Dapatan Kualitatif Utama ILHAM (Sebelum Pengundian)</h3>
+
+<h4>1. "Setting" PRN Berasingan Daripada PRU</h4>
+<p>ILHAM menegaskan pengundi menilai prestasi kerajaan <i>negeri</i>, bukan persekutuan, dalam PRN — memberi kelebihan struktur kepada BN sebagai kerajaan negeri sedia ada. Dapatan pasca-pilihan raya (Seksyen 22) mengesahkan tepat premis ini: PH jatuh −24.6% berbanding paras PRU-15 walaupun turnout kekal tinggi (69.7%), manakala BN melonjak +87.0% — corak yang konsisten dengan hujah ILHAM bahawa "PH masih berfikir dalam kerangka PRU" sedangkan "BN bertanding mengikut setting PRN".</p>
+
+<h4>2. Turnout Pengundi Cina Sebagai Pembolehubah Paling Kritikal</h4>
+<p>ILHAM meramalkan PH memerlukan <b>sekurang-kurangnya 65% turnout Cina</b> untuk mengekalkan kelebihan di kerusi bandar/separa bandar, dan menjangka mood pengundi Cina yang "tawar hati" (bukan peralihan sokongan ke BN, tetapi kecenderungan tidak keluar mengundi) sebagai risiko utama PH. <span class="source-tag survey">TINJAUAN PRA-PRN</span></p>
+<div class="callout warn"><b>Titik pertemuan penting dengan model pasca-pilihan raya:</b> Model ekologi pilihanraya.my (Seksyen 08) mendapati turnout Cina 2026 dianggarkan ~59–62% — <b>tepat di bawah ambang 65% yang ILHAM kenal pasti sebagai kritikal</b>, walaupun ia sebenarnya menunjukkan <i>peningkatan</i> ketara berbanding 2022 (~45%). Ini mendamaikan dua naratif yang kelihatan berbeza (Seksyen 12): turnout Cina memang naik secara mutlak (mencabar tanggapan "boikot total"), tetapi ia gagal mencecah ambang yang diperlukan PH untuk mengekalkan kelebihan di kerusi marginal (mengesahkan kebimbangan ILHAM). Kedua-dua sumber, menggunakan kaedah berbeza sepenuhnya (tinjauan lapangan pra-pilihan raya lawan inferens ekologi pasca-pilihan raya), tiba pada kesimpulan struktur yang serasi.</div>
+
+<h4>3. Sokongan Taktikal PAS Kepada BN</h4>
+<p>ILHAM mendapati sebahagian penyokong PAS di kawasan majoriti Melayu tidak lagi melihat PN sebagai pilihan berdaya kemenangan (susulan ketegangan hubungan PAS-BERSATU), lalu memberi sokongan taktikal kepada BN dalam apa yang sebelum ini pertandingan tiga penjuru sengit. Ini selari tepat dengan dapatan statistik pasca-pilihan raya (Seksyen 09): anggaran 36–45% tambahan undi BN berasal daripada takungan bekas PN, dengan kecerunan pemindahan tertinggi (0.86) justeru di kerusi yang PN <i>tidak</i> bertanding langsung — mengesahkan tepat mekanisme "sokongan taktikal" yang dikenal pasti ILHAM menerusi kaedah kualitatif berbeza sepenuhnya.</p>
+
+<h4>4. Onn Hafiz 79% Berbanding Anwar Ibrahim 40% (Populariti)</h4>
+<p>Dapatan tinjauan ILHAM merekodkan populariti Menteri Besar Onn Hafiz Ghazi mencecah <b>79%</b> dalam kalangan responden, berbanding populariti Perdana Menteri Anwar Ibrahim pada <b>40%</b> — menjadikan Onn Hafiz aset politik paling bernilai BN sepanjang kempen. ILHAM turut mencatatkan naratif kempen BN dibina atas kesinambungan pentadbiran, projek pembangunan (RTS, Data Centre, JS-SEZ) dan bantuan tunai negeri, manakala PH dilihat terlalu bergantung kepada karisma PM tanpa tema kempen tempatan yang jelas — malah ramai responden tidak dapat menyatakan tema utama kempen PH selain seruan menyokong kerajaan persekutuan. Percubaan PH mengalihkan fokus kempen (contohnya mencadangkan perdebatan Maszlee Malik–Onn Hafiz) turut gagal direalisasikan.</p>
+
+<h4>5. Pengundi Muda: "Candidate-Centric" &amp; "Late Decider"</h4>
+<p>ILHAM mendapati pengundi muda (48% daripada keseluruhan pengundi) sangat berorientasikan calon (bukan jenama parti), membuat keputusan lewat dalam tempoh kempen ("late decider") berdasarkan penilaian komunikasi calon, rekod perkhidmatan dan keterlihatan media sosial — dengan kira-kira <b>17% pengundi keseluruhan masih belum membuat keputusan</b> menjelang hari mengundi. Ini memberi konteks kualitatif kepada dapatan pasca-pilihan raya (Seksyen 10) bahawa kesan umur terhadap undi PH adalah sifar selepas pembetulan statistik — bukan kerana anak muda tiada pengaruh, tetapi kerana pilihan mereka bergantung kepada calon individu (menguntungkan penyandang berprestasi tanpa mengira parti) dan bukan kesetiaan parti yang boleh diramal.</p>
+
+<h4>6. PN Hilang Arah — Daripada Pencabar Utama Kepada "Nilai Tambah" Kemenangan BN</h4>
+<p>ILHAM meramalkan (dengan tepat) bahawa ketegangan PAS-BERSATU, kekeliruan hala tuju gabungan dan kegagalan naratif kempen yang jelas telah menghakis imej PN sebagai alternatif kerajaan yang meyakinkan — walaupun daripada trajektori PRN2022→PRU15, PN sepatutnya menjadi pencabar utama di kerusi majoriti Melayu. Dapatan menarik: ramai pengundi muda yang "obses" dengan PN tidak menyedari keretakan dalaman PAS-BERSATU di peringkat kepimpinan — jurang persepsi akar-umbi vs realiti elit yang menyebabkan PN gagal menterjemah sokongan laten kepada jentera berkesan. Ini konsisten sepenuhnya dengan keruntuhan struktur PN yang direkodkan pasca-pilihan raya (Seksyen 04 &amp; 09) — kehilangan wang pertaruhan di 21/33 kerusi.</p>
+
+<h4>7. Parti Kecil (MUDA, BERSAMA) — "Kacau Daun"</h4>
+<p>ILHAM mendapati persepsi awam terhadap MUDA dan BERSAMA sekadar "kacau daun" — memecah undi blok pembangkang berbanding menawarkan pilihan ketiga berdaya saing. Bagi MUDA, ILHAM mendapati kemenangan Puteri Wangsa 2022 dilihat pengundi sebagai hasil kedudukannya dalam gabungan PH ketika itu, bukan semata populariti Syed Saddiq Syed Abdul Rahman — apabila bertanding bersendirian pada 2026, MUDA gagal mengekalkan kelebihan (kehilangan Puteri Wangsa, jatuh −79% undi negeri, lihat Seksyen 04). Bagi BERSAMA, kontroversi calon sepanjang kempen menenggelamkan sebarang percubaan naratif alternatif. Kedua-dua dapatan ini konsisten sepenuhnya dengan keputusan sebenar (Seksyen 04 &amp; 09): kesemua 19 calon MUDA+BERSAMA gagal, dan kesan bersih terhadap keputusan negeri adalah marginal (walaupun berpotensi menentukan 2 kerusi paling tipis).</p>
+
+<div class="callout blue"><b>Nilai strategik gabungan dua kaedah:</b> Kesesuaian tinggi antara dapatan kualitatif ILHAM (pra-pilihan raya) dan model statistik pilihanraya.my (pasca-pilihan raya) — walaupun menggunakan data dan kaedah yang sepenuhnya berbeza — memberi keyakinan tambahan kepada dapatan teras laporan ini: keruntuhan PN mengalir ke BN, turnout Cina di bawah ambang kritikal, populariti peribadi Onn Hafiz, dan kegagalan PH membina naratif tempatan yang berdiri sendiri daripada bayang-bayang PRU-15.</div>
+</section>
+
+<!-- 03 RINGKASAN KEPUTUSAN -->
+<section class="section" id="ringkasan">
+<h2><span class="num">03</span>Ringkasan Keputusan Keseluruhan</h2>
+
+<table>
+<tr><th>Blok / Parti</th><th class="num">Kerusi Ditanding</th><th class="num">Kerusi Menang</th><th class="num">% Kerusi</th><th class="num">Undi Diperoleh</th><th class="num">% Undi Sah</th></tr>
+<tr><td><span class="tag bn">BN</span></td><td class="num">56</td><td class="num">48</td><td class="num">85.7%</td><td class="num">1,118,559</td><td class="num">59.66%</td></tr>
+<tr><td><span class="tag ph">PH</span></td><td class="num">56</td><td class="num">8</td><td class="num">14.3%</td><td class="num">611,983</td><td class="num">32.64%</td></tr>
+<tr><td><span class="tag pn">PN</span></td><td class="num">33</td><td class="num">0</td><td class="num">0%</td><td class="num">102,090</td><td class="num">5.45%</td></tr>
+<tr><td><span class="tag bersama">BERSAMA</span></td><td class="num">15</td><td class="num">0</td><td class="num">0%</td><td class="num">28,816</td><td class="num">1.54%</td></tr>
+<tr><td>MUDA</td><td class="num">4</td><td class="num">0</td><td class="num">0%</td><td class="num">10,236</td><td class="num">0.55%</td></tr>
+<tr><td>Bebas / Lain-lain</td><td class="num">6</td><td class="num">0</td><td class="num">0%</td><td class="num">1,876</td><td class="num">0.10%</td></tr>
+<tr><td>PSM</td><td class="num">1</td><td class="num">0</td><td class="num">0%</td><td class="num">964</td><td class="num">0.05%</td></tr>
+<tr><td>ASLI</td><td class="num">1</td><td class="num">0</td><td class="num">0%</td><td class="num">394</td><td class="num">0.02%</td></tr>
+<tr style="font-weight:700;"><td>JUMLAH</td><td class="num">172 (calon)</td><td class="num">56</td><td class="num">100%</td><td class="num">1,874,918</td><td class="num">100%</td></tr>
+</table>
+
+<div class="grid3">
+  <div class="kpi"><div class="v">2,727,926</div><div class="l">Pengundi Berdaftar</div><div class="d up">+130,184 (2022: 2,597,742)</div></div>
+  <div class="kpi"><div class="v">1,897,892</div><div class="l">Kertas Undi Dikeluarkan</div><div class="d">2022: 1,426,573</div></div>
+  <div class="kpi"><div class="v">20,648</div><div class="l">Undi Rosak (1.09%)</div><div class="d up">2022: 25,953 (1.82%)</div></div>
+</div>
+
+<div class="two-charts">
+  <div class="chart-box"><canvas id="chartSeats"></canvas></div>
+  <div class="chart-box"><canvas id="chartVotesVsSeats"></canvas></div>
+</div>
+<p class="footnote">Kertas undi dikeluarkan (1,897,892) berbeza daripada jumlah undi sah (1,874,918) disebabkan 20,648 undi rosak dan 2,326 kertas tidak dikembalikan. Keluar mengundi rasmi (berwajaran, jumlah undi/jumlah daftar): 69.57%; purata mudah merentasi 56 DUN (iprom.org): 70.4% — perbezaan ~0.8 mata disebabkan kaedah pengiraan (purata berwajaran lawan purata mudah setiap DUN).</p>
+
+<h3>Carta Undi Berbanding Kerusi — Ketaksamaan Sistem "First-Past-The-Post"</h3>
+<p>BN memperoleh 59.7% undi tetapi 85.7% kerusi; PH memperoleh 32.6% undi tetapi hanya 14.3% kerusi. Ini ialah ciri semula jadi sistem "siapa lepas dulu dia menang" apabila sokongan lawan tertumpu di sedikit kawasan geografi. <b>Majoriti dua pertiga Dewan bukan bermakna dua pertiga rakyat Johor mengundi BN.</b></p>
+
+<h3>Majoriti Terbesar &amp; Terkecil</h3>
+<table class="narrow">
+<tr><th>Kategori</th><th>DUN</th><th class="num">Majoriti</th><th class="num">%</th></tr>
+<tr><td>Majoriti Terbesar</td><td>N.43 Permas (BN — Baharudin bin Mohamed Taib)</td><td class="num">29,505</td><td class="num">37.3%</td></tr>
+<tr><td>Majoriti Terkecil</td><td>N.13 Simpang Jeram (PH — Nazri bin Abdul Rahman)</td><td class="num">170</td><td class="num">0.6%</td></tr>
+</table>
+</section>
+
+<!-- 04 ANALISIS MENGIKUT PARTI -->
+<section class="section" id="parti">
+<h2><span class="num">04</span>Analisis Mengikut Parti</h2>
+<p class="lede">Jumlah blok menyembunyikan cerita komponen. Undi sah seluruh negeri naik 34.8% berbanding 2022 — parti yang tumbuh kurang daripada kadar ini sebenarnya <i>mengecil</i> dari segi bahagian pasaran politik.</p>
+
+<table>
+<tr><th>Gabungan</th><th>Parti</th><th class="num">Kerusi Ditanding 2026</th><th class="num">Undi 2022</th><th class="num">Undi 2026</th><th class="num">Perubahan</th><th>Kerusi Menang 2022→2026</th></tr>
+<tr><td rowspan="3"><span class="tag bn">BN</span></td><td>UMNO</td><td class="num">37</td><td class="num">406,997</td><td class="num">766,262</td><td class="num up">+88%</td><td>33 → 36</td></tr>
+<tr><td>MCA</td><td class="num">15</td><td class="num">154,922</td><td class="num">274,786</td><td class="num up">+77%</td><td>4 → 8</td></tr>
+<tr><td>MIC</td><td class="num">4</td><td class="num">37,834</td><td class="num">77,511</td><td class="num up">+105%</td><td>3 → 4</td></tr>
+<tr><td rowspan="3"><span class="tag ph">PH</span></td><td>DAP</td><td class="num">17</td><td class="num">181,455</td><td class="num">291,273</td><td class="num up">+61%</td><td>10 → 6</td></tr>
+<tr><td>AMANAH</td><td class="num">20</td><td class="num">103,514</td><td class="num">165,777</td><td class="num up">+60%</td><td>1 → 1</td></tr>
+<tr><td>PKR</td><td class="num">19</td><td class="num">82,556</td><td class="num">154,933</td><td class="num up">+88%</td><td>1 → 1</td></tr>
+<tr><td rowspan="3"><span class="tag pn">PN</span></td><td>BERSATU</td><td class="num">16</td><td class="num">197,913</td><td class="num">46,072</td><td class="num down">−77%</td><td>2 → 0</td></tr>
+<tr><td>PAS</td><td class="num">11</td><td class="num">89,744</td><td class="num">45,934</td><td class="num down">−49%</td><td>1 → 0</td></tr>
+<tr><td>MIPP</td><td class="num">5</td><td class="num">—</td><td class="num">8,196</td><td class="num">baharu</td><td>0 → 0</td></tr>
+<tr><td>—</td><td>GERAKAN</td><td class="num">tidak bertanding</td><td class="num">46,800</td><td class="num">—</td><td class="num">—</td><td>0 → 0</td></tr>
+<tr><td>—</td><td>MUDA</td><td class="num">4</td><td class="num">48,072</td><td class="num">10,236</td><td class="num down">−79%</td><td>1 → 0</td></tr>
+<tr><td>—</td><td><span class="tag bersama">BERSAMA</span></td><td class="num">15</td><td class="num">tidak bertanding</td><td class="num">28,816</td><td class="num">baharu</td><td>0 → 0</td></tr>
+</table>
+<p class="footnote">Nota: PKR dan MUDA bertanding atas logo sendiri pada 2022 (bukan logo PH); angka diletakkan bersebelahan untuk perbandingan. Jumlah komponen PN 2026 (BERSATU+PAS+MIPP = 100,202) tidak menyamai jumlah blok PN rasmi (102,090) — baki 1,888 undi (~1.8%) tidak dapat dikenal pasti kepada komponen tertentu dalam data yang diberikan.</p>
+
+<div class="chart-box"><canvas id="chartPartyChange"></canvas></div>
+
+<h3 style="color:var(--bn-blue);">Barisan Nasional (BN)</h3>
+<p>Ketiga-tiga komponen BN tumbuh jauh melebihi kadar pertumbuhan undi negeri (34.8%) — UMNO +88%, MCA +77%, MIC +105% — dengan tapak kerusi yang hampir sama antara dua pilihan raya (37/15/4). Ini bukan pertumbuhan calon atau kerusi baharu, tetapi <b>seluruh tiket BN dibanjiri undi tanpa mengira siapa calonnya</b> — corak ciri khas "coattail effect" yang kuat, didorong oleh keruntuhan PN dan populariti Menteri Besar Onn Hafiz bin Ghazi (populariti 79% menurut tinjauan ILHAM Centre — lihat Seksyen 02A).</p>
+
+<h3 style="color:var(--ph-red);">Pakatan Harapan (PH) — DAP, AMANAH, PKR</h3>
+<p>Setiap komponen PH turut menambah undi (DAP +61%, AMANAH +60%, PKR +88%) — bukti bahawa PH memenangi gelombangnya sendiri, tetapi penyebut (jumlah undi sah) membesar lebih pantas. DAP kekal komponen PH paling produktif dari segi kerusi (6 kerusi), diikuti AMANAH dan PKR masing-masing mengekalkan 1 kerusi sahaja daripada 20 dan 19 calon.</p>
+
+<h3 style="color:var(--pn-green);">Perikatan Nasional (PN) — BERSATU, PAS, MIPP</h3>
+<p>Keruntuhan PN merentasi kedua-dua sayap serentak — BERSATU kehilangan tiga perempat undinya (−77%) walaupun mengekalkan separuh tapak kerusi (32→16), manakala PAS kehilangan separuh (−49%, 14→11 kerusi ditanding). <b>Tiada "kubu PAS yang bertahan sementara BERSATU tumbang"</b> — kedua-duanya runtuh serentak. PN hilang wang pertaruhan di 21 daripada 33 kerusi yang ditandingi (63.6%). Tinjauan pra-pilihan raya ILHAM Centre (Seksyen 02A) mengesahkan punca dalaman keruntuhan ini: ketegangan hubungan PAS-BERSATU dan kekeliruan hala tuju gabungan menghakis imej PN sebagai alternatif kerajaan yang meyakinkan, menyebabkan sebahagian penyokong Melayu memberi sokongan taktikal kepada BN.</p>
+
+<h3>MUDA &amp; BERSAMA — Parti Kecil dan Kesan Pemecah Undi</h3>
+<p>MUDA, yang memenangi kerusi Puteri Wangsa pada 2022, jatuh −79% dalam undi dan kehilangan kerusi tersebut. BERSAMA meraih 28,816 undi (1.54%) merentasi 15 kerusi tetapi gagal menyelamatkan wang pertaruhan di mana-mana kerusi. Kedua-dua parti ini dilihat oleh pengundi (menurut tinjauan kualitatif ILHAM Centre) sekadar "kacau daun" — memecah undi blok pembangkang berbanding menawarkan pilihan ketiga yang berdaya saing (lihat Seksyen 02A). Lihat Seksyen 09 untuk analisis kesan berangka BERSAMA terhadap PH.</p>
+</section>
+
+<!-- 05 ANALISIS MENGIKUT DUN -->
+<section class="section" id="dun">
+<h2><span class="num">05</span>Analisis Mengikut DUN (Semua 56 Kerusi)</h2>
+<p class="lede">Jadual penuh keputusan 56 DUN, disusun mengikut kod kerusi. 9 kerusi (16.1%) bertukar tangan parti pemenang antara 2022 dan 2026; 47 kerusi (83.9%) kekal dengan parti/blok yang sama.</p>
+
+<table style="font-size:12px;">
+<tr><th>Kod</th><th>DUN</th><th>Pemenang 2026</th><th>Parti</th><th class="num">Majoriti</th><th class="num">Majoriti %</th><th class="num">Turnout %</th><th>Status</th></tr>
+<tr><td>N.01</td><td>Buloh Kasap</td><td>Zahari bin Sarip</td><td><span class="tag bn">BN</span></td><td class="num">8,600</td><td class="num">44.1%</td><td class="num">68.2%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.02</td><td>Jementah</td><td>See Ann Giap</td><td><span class="tag bn">BN</span></td><td class="num">913</td><td class="num">3.4%</td><td class="num">66.5%</td><td><span class="tag tukar">BERTUKAR</span></td></tr>
+<tr><td>N.03</td><td>Pemanis</td><td>Anuar bin Abdul Manap</td><td><span class="tag bn">BN</span></td><td class="num">8,380</td><td class="num">39.4%</td><td class="num">71.0%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.04</td><td>Kemelah</td><td>Raven Kumar a/l Krishnasamy</td><td><span class="tag bn">BN</span></td><td class="num">3,838</td><td class="num">16.3%</td><td class="num">67.3%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.05</td><td>Tenang</td><td>Mohd Azahar bin Ibrahim</td><td><span class="tag bn">BN</span></td><td class="num">3,394</td><td class="num">23.3%</td><td class="num">65.4%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.06</td><td>Bekok</td><td>Tan Chong</td><td><span class="tag bn">BN</span></td><td class="num">4,263</td><td class="num">26.3%</td><td class="num">60.4%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.07</td><td>Bukit Kepong</td><td>Ahmad Syar'E bin Yusof</td><td><span class="tag bn">BN</span></td><td class="num">10,761</td><td class="num">40.3%</td><td class="num">71.6%</td><td><span class="tag tukar">BERTUKAR</span></td></tr>
+<tr><td>N.08</td><td>Bukit Pasir</td><td>Mohamad Fazli bin Mohamad Salleh</td><td><span class="tag bn">BN</span></td><td class="num">7,600</td><td class="num">30.8%</td><td class="num">73.0%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.09</td><td>Gambir</td><td>Sahrihan bin Jani</td><td><span class="tag bn">BN</span></td><td class="num">6,734</td><td class="num">30.6%</td><td class="num">73.3%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.10</td><td>Tangkak</td><td>Haw Chin Teck</td><td><span class="tag bn">BN</span></td><td class="num">3,182</td><td class="num">12.8%</td><td class="num">68.1%</td><td><span class="tag tukar">BERTUKAR</span></td></tr>
+<tr><td>N.11</td><td>Serom</td><td>Nadhirah Afiqah binti Abdull Rahim</td><td><span class="tag bn">BN</span></td><td class="num">9,406</td><td class="num">32.8%</td><td class="num">72.1%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.12</td><td>Bentayan</td><td>Ng Yak Howe</td><td><span class="tag ph">PH</span></td><td class="num">6,112</td><td class="num">28.1%</td><td class="num">64.2%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.13</td><td>Simpang Jeram</td><td>Nazri bin Abdul Rahman</td><td><span class="tag ph">PH</span></td><td class="num">170</td><td class="num">0.6%</td><td class="num">71.2%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.14</td><td>Bukit Naning</td><td>Mohd Ghazali bin Sabari @ Atan</td><td><span class="tag bn">BN</span></td><td class="num">3,610</td><td class="num">20.8%</td><td class="num">76.3%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.15</td><td>Maharani</td><td>Ashari bin Md. Sarip</td><td><span class="tag bn">BN</span></td><td class="num">2,143</td><td class="num">7.9%</td><td class="num">68.8%</td><td><span class="tag tukar">BERTUKAR</span></td></tr>
+<tr><td>N.16</td><td>Sungai Balang</td><td>Selamat bin Takim</td><td><span class="tag bn">BN</span></td><td class="num">8,926</td><td class="num">39.0%</td><td class="num">74.4%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.17</td><td>Semerah</td><td>Mohd Fared bin Mohd Khalid</td><td><span class="tag bn">BN</span></td><td class="num">15,663</td><td class="num">45.2%</td><td class="num">74.0%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.18</td><td>Sri Medan</td><td>Zulkurnain bin Kamisan</td><td><span class="tag bn">BN</span></td><td class="num">15,814</td><td class="num">59.5%</td><td class="num">79.3%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.19</td><td>Yong Peng</td><td>Ling Tian Soon</td><td><span class="tag bn">BN</span></td><td class="num">4,603</td><td class="num">20.3%</td><td class="num">67.4%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.20</td><td>Semarang</td><td>Samsolbari bin Jamali</td><td><span class="tag bn">BN</span></td><td class="num">14,679</td><td class="num">65.9%</td><td class="num">78.3%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.21</td><td>Parit Yaani</td><td>Mohamad Najib bin Samuri</td><td><span class="tag bn">BN</span></td><td class="num">7,620</td><td class="num">24.0%</td><td class="num">71.5%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.22</td><td>Parit Raja</td><td>Rashidah binti Ramli</td><td><span class="tag bn">BN</span></td><td class="num">13,576</td><td class="num">47.6%</td><td class="num">75.6%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.23</td><td>Penggaram</td><td>Felicia Poh Rui Ling</td><td><span class="tag ph">PH</span></td><td class="num">4,137</td><td class="num">9.2%</td><td class="num">64.7%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.24</td><td>Senggarang</td><td>Mohd Yusla bin Ismail</td><td><span class="tag bn">BN</span></td><td class="num">7,916</td><td class="num">28.5%</td><td class="num">73.0%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.25</td><td>Rengit</td><td>Zaidi bin Japar</td><td><span class="tag bn">BN</span></td><td class="num">10,817</td><td class="num">52.6%</td><td class="num">75.4%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.26</td><td>Machap</td><td>Onn Hafiz bin Ghazi</td><td><span class="tag bn">BN</span></td><td class="num">15,375</td><td class="num">60.6%</td><td class="num">73.0%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.27</td><td>Layang-Layang</td><td>Chua Jian Boon</td><td><span class="tag bn">BN</span></td><td class="num">7,912</td><td class="num">45.9%</td><td class="num">69.4%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.28</td><td>Mengkibol</td><td>Chu Poh Yee</td><td><span class="tag ph">PH</span></td><td class="num">4,213</td><td class="num">9.7%</td><td class="num">64.2%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.29</td><td>Mahkota</td><td>Syed Hussien bin Syed Abdullah</td><td><span class="tag bn">BN</span></td><td class="num">16,645</td><td class="num">36.4%</td><td class="num">68.3%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.30</td><td>Paloh</td><td>Lee Ting Han</td><td><span class="tag bn">BN</span></td><td class="num">6,199</td><td class="num">36.8%</td><td class="num">67.4%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.31</td><td>Kahang</td><td>Rugendran a/l Vellayan</td><td><span class="tag bn">BN</span></td><td class="num">12,013</td><td class="num">56.5%</td><td class="num">72.2%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.32</td><td>Endau</td><td>Alwiyah binti Talib</td><td><span class="tag bn">BN</span></td><td class="num">3,545</td><td class="num">19.2%</td><td class="num">65.2%</td><td><span class="tag tukar">BERTUKAR</span></td></tr>
+<tr><td>N.33</td><td>Tenggaroh</td><td>Mohd Youzaimi bin Yusof</td><td><span class="tag bn">BN</span></td><td class="num">15,258</td><td class="num">59.4%</td><td class="num">67.0%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.34</td><td>Panti</td><td>Muhammad Naqib bin Md Ghazali</td><td><span class="tag bn">BN</span></td><td class="num">18,948</td><td class="num">63.6%</td><td class="num">73.0%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.35</td><td>Pasir Raja</td><td>Adham bin Baba</td><td><span class="tag bn">BN</span></td><td class="num">12,446</td><td class="num">58.5%</td><td class="num">72.2%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.36</td><td>Sedili</td><td>Muszaide bin Makmor</td><td><span class="tag bn">BN</span></td><td class="num">16,213</td><td class="num">73.5%</td><td class="num">76.8%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.37</td><td>Johor Lama</td><td>Norlizah binti Noh</td><td><span class="tag bn">BN</span></td><td class="num">16,344</td><td class="num">68.6%</td><td class="num">73.7%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.38</td><td>Penawar</td><td>Fauziah binti Misri</td><td><span class="tag bn">BN</span></td><td class="num">15,776</td><td class="num">67.4%</td><td class="num">76.0%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.39</td><td>Tanjung Surat</td><td>Aznan bin Tamin</td><td><span class="tag bn">BN</span></td><td class="num">15,642</td><td class="num">81.0%</td><td class="num">72.9%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.40</td><td>Tiram</td><td>Abdul Halim bin Suleiman</td><td><span class="tag bn">BN</span></td><td class="num">28,255</td><td class="num">34.0%</td><td class="num">71.7%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.41</td><td>Puteri Wangsa</td><td>Maszlee bin Malik</td><td><span class="tag ph">PH</span></td><td class="num">5,744</td><td class="num">6.7%</td><td class="num">67.6%</td><td><span class="tag tukar">BERTUKAR</span></td></tr>
+<tr><td>N.42</td><td>Johor Jaya</td><td>Chan San San</td><td><span class="tag bn">BN</span></td><td class="num">7,268</td><td class="num">10.9%</td><td class="num">69.3%</td><td><span class="tag tukar">BERTUKAR</span></td></tr>
+<tr><td>N.43</td><td>Permas</td><td>Baharudin bin Mohamed Taib</td><td><span class="tag bn">BN</span></td><td class="num">29,505</td><td class="num">37.3%</td><td class="num">70.3%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.44</td><td>Larkin</td><td>Mohd Hairi bin Mad Shah</td><td><span class="tag bn">BN</span></td><td class="num">20,282</td><td class="num">40.4%</td><td class="num">66.2%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.45</td><td>Stulang</td><td>Andrew Chen Kah Eng</td><td><span class="tag ph">PH</span></td><td class="num">623</td><td class="num">1.7%</td><td class="num">62.5%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.46</td><td>Perling</td><td>Pannir Selvam</td><td><span class="tag bn">BN</span></td><td class="num">1,611</td><td class="num">2.4%</td><td class="num">62.8%</td><td><span class="tag tukar">BERTUKAR</span></td></tr>
+<tr><td>N.47</td><td>Kempas</td><td>Ramlee bin Bohani</td><td><span class="tag bn">BN</span></td><td class="num">14,953</td><td class="num">34.6%</td><td class="num">68.0%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.48</td><td>Skudai</td><td>Kartiyaini a/p Jeyapalan</td><td><span class="tag ph">PH</span></td><td class="num">15,280</td><td class="num">22.5%</td><td class="num">64.3%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.49</td><td>Kota Iskandar</td><td>Pandak bin Ahmad</td><td><span class="tag bn">BN</span></td><td class="num">21,206</td><td class="num">23.4%</td><td class="num">69.1%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.50</td><td>Bukit Permai</td><td>Mohd Jafni bin Md Shukor</td><td><span class="tag bn">BN</span></td><td class="num">12,721</td><td class="num">39.1%</td><td class="num">73.5%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.51</td><td>Bukit Batu</td><td>Kumaran a/l Rama Krishnan</td><td><span class="tag bn">BN</span></td><td class="num">174</td><td class="num">0.5%</td><td class="num">71.8%</td><td><span class="tag tukar">BERTUKAR</span></td></tr>
+<tr><td>N.52</td><td>Senai</td><td>Wong Bor Yang</td><td><span class="tag ph">PH</span></td><td class="num">3,595</td><td class="num">7.8%</td><td class="num">69.9%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.53</td><td>Benut</td><td>Mohd Sumali bin Reduan</td><td><span class="tag bn">BN</span></td><td class="num">15,701</td><td class="num">73.8%</td><td class="num">74.9%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.54</td><td>Pulai Sebatang</td><td>Hasrunizah binti Hassan</td><td><span class="tag bn">BN</span></td><td class="num">13,590</td><td class="num">41.0%</td><td class="num">70.3%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.55</td><td>Pekan Nanas</td><td>Tan Eng Meng</td><td><span class="tag bn">BN</span></td><td class="num">12,281</td><td class="num">44.5%</td><td class="num">74.7%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+<tr><td>N.56</td><td>Kukup</td><td>Md Israk bin Abdullah</td><td><span class="tag bn">BN</span></td><td class="num">11,354</td><td class="num">44.6%</td><td class="num">73.7%</td><td><span class="tag kekal">KEKAL</span></td></tr>
+</table>
+
+<h3>Senarai Penuh 9 Kerusi Bertukar Tangan</h3>
+<table class="narrow">
+<tr><th>DUN</th><th>2022</th><th>2026</th><th class="num">Majoriti Baharu</th></tr>
+<tr><td>N.02 Jementah</td><td><span class="tag ph">PH</span> Ng Kor Sim</td><td><span class="tag bn">BN</span> See Ann Giap</td><td class="num">913 (3.4%)</td></tr>
+<tr><td>N.07 Bukit Kepong</td><td><span class="tag pn">PN</span> Sahruddin bin Jamal</td><td><span class="tag bn">BN</span> Ahmad Syar'E bin Yusof</td><td class="num">10,761 (40.3%)</td></tr>
+<tr><td>N.10 Tangkak</td><td><span class="tag ph">PH</span> Ee Chin Li</td><td><span class="tag bn">BN</span> Haw Chin Teck</td><td class="num">3,182 (12.8%)</td></tr>
+<tr><td>N.15 Maharani</td><td><span class="tag pn">PN</span> Abdul Aziz bin Talib</td><td><span class="tag bn">BN</span> Ashari bin Md. Sarip</td><td class="num">2,143 (7.9%)</td></tr>
+<tr><td>N.32 Endau</td><td><span class="tag pn">PN</span> Alwiyah binti Talib (Kak Awi)</td><td><span class="tag bn">BN</span> Alwiyah binti Talib</td><td class="num">3,545 (19.2%)</td></tr>
+<tr><td>N.41 Puteri Wangsa</td><td>MUDA Amira Aisya binti Abd Aziz</td><td><span class="tag ph">PH</span> Maszlee bin Malik</td><td class="num">5,744 (6.7%)</td></tr>
+<tr><td>N.42 Johor Jaya</td><td><span class="tag ph">PH</span> Liow Cai Tung</td><td><span class="tag bn">BN</span> Chan San San</td><td class="num">7,268 (10.9%)</td></tr>
+<tr><td>N.46 Perling</td><td><span class="tag ph">PH</span> Liew Chin Tong</td><td><span class="tag bn">BN</span> Pannir Selvam</td><td class="num">1,611 (2.4%)</td></tr>
+<tr><td>N.51 Bukit Batu</td><td><span class="tag ph">PH</span> Arthur Chiong Sen Sern</td><td><span class="tag bn">BN</span> Kumaran a/l Rama Krishnan</td><td class="num">174 (0.5%)</td></tr>
+</table>
+<p class="footnote">Menarik perhatian: N.32 Endau — calon PN 2022 (Alwiyah binti Talib, dikenali "Kak Awi") merentas parti dan menang semula kerusi yang sama pada 2026 di bawah tiket BN.</p>
+
+<h3>Kerusi Paling Kompetitif (10 Majoriti Terkecil)</h3>
+<div class="chart-box"><canvas id="chartMarginRank"></canvas></div>
+</section>
+
+<!-- 06 PARLIMEN -->
+<section class="section" id="parlimen">
+<h2><span class="num">06</span>Analisis Mengikut Parlimen</h2>
+<div class="callout warn">
+<b>Jurang data:</b> Kesemua lima sumber (pilihanraya.my, lampiran teknikal, iprom.org, ILHAM Centre, hantaran Facebook) hanya menyediakan keputusan pada peringkat DUN (56 kerusi negeri). Tiada satu pun sumber menyediakan pecahan undi atau kerusi mengikut sempadan Parlimen (26 kerusi Parlimen Johor). Pilihan raya ini adalah PRN semata-mata — tiada pertandingan Parlimen berlaku serentak.</div>
+<p>Untuk mengelakkan anggaran yang mengelirukan, analisis peringkat Parlimen <b>tidak disediakan</b> dalam laporan ini. Disyorkan pasukan analitik memperoleh carta lintas rasmi SPR bagi 26 kawasan Parlimen Johor untuk membolehkan agregasi tepat pada PRU akan datang.</p>
+</section>
+
+<!-- 07 DEMOGRAFI -->
+<section class="section" id="demografi">
+<h2><span class="num">07</span>Analisis Demografi Pengundi</h2>
+<p class="lede">SPR tidak merekodkan kaum pengundi yang keluar mengundi. Semua angka mengikut kaum dalam seksyen ini adalah <span class="source-tag est">ANGGARAN</span> daripada inferens ekologi (agregat 56 kerusi), menggunakan dua spesifikasi model (Model A tanpa penalti; Model B dengan regularisasi ridge, λ = 2.7×10⁵). Komposisi Melayu–Cina di Johor hampir konsisten (korelasi −0.95), menjadikan pemisahan penuh antara kedua-dua kumpulan secara statistik mencabar; anggaran bagi pengundi India (~7% daftar pemilih, maksimum 18.7% dalam mana-mana satu kerusi) tidak dapat dikenal pasti dengan yakin.</p>
+
+<h3>Pengundi Baharu (Daftar Automatik) — Anjakan Komposisi Pro-BN</h3>
+<table class="narrow">
+<tr><th>Kumpulan</th><th class="num">% Pengundi Baharu</th><th class="num">% Daftar Pemilih Keseluruhan</th><th>Anjakan</th></tr>
+<tr><td>Melayu</td><td class="num">60.7%</td><td class="num">53.8%</td><td class="num up">+6.9 mata</td></tr>
+<tr><td>Cina</td><td class="num">26.5%</td><td class="num">35.8%</td><td class="num down">−9.3 mata</td></tr>
+</table>
+<p>Pengundi baharu Johor (hasil pendaftaran automatik / mencapai umur mengundi) adalah 60.7% Melayu berbanding 53.8% dalam keseluruhan daftar pemilih — bermakna setiap kitaran pilihan raya akan menganjak komposisi pengundi negeri secara beransur-ansur ke arah struktur yang lebih menguntungkan BN.</p>
+
+<h3>Hubungan Komposisi Kaum dan Sokongan PH</h3>
+<div class="chart-box"><canvas id="chartChinesePH"></canvas></div>
+<p>Hubungan paling kuat dalam keseluruhan set data (R² = 0.95, kecerunan 0.915): <b>peratus undi PH di sesuatu kerusi bergerak hampir satu-sama-satu dengan peratus pengundi Cina di kerusi tersebut.</b> Garis rentas PH/BN jatuh pada kira-kira <b>51.6% komposisi Cina</b> — lapan kerusi negeri melepasi ambang ini, dan PH menang tepat 8 kerusi, tetapi bukan lapan kerusi yang sama (Yong Peng, 56% Cina, jatuh ke BN; Simpang Jeram, 44% Cina, dipertahankan PH dengan majoriti 170 undi sahaja).</p>
+</section>
+
+<!-- 08 TURNOUT -->
+<section class="section" id="turnout">
+<h2><span class="num">08</span>Analisis Turnout Pengundi</h2>
+<div class="grid3">
+  <div class="kpi"><div class="v">69.6%</div><div class="l">Keluar Mengundi 2026</div><div class="d up">2022: 54.6% (+15.0 mata)</div></div>
+  <div class="kpi"><div class="v">79.3%</div><div class="l">Turnout Tertinggi</div><div class="d">N.18 Sri Medan</div></div>
+  <div class="kpi"><div class="v">60.4%</div><div class="l">Turnout Terendah</div><div class="d">N.06 Bekok</div></div>
+</div>
+<p>Kesemua 56 kerusi mencatatkan peningkatan turnout — dari +9.0 mata (Paloh) hingga +20.0 mata (Puteri Wangsa). Anggaran ekologi meletakkan lonjakan pada: <b>Melayu +10.8 mata, Cina +17.0 mata, India &amp; lain +30.5 mata</b> — lonjakan secara berkadar lebih tinggi bagi bukan-Melayu dan lebih tertumpu di kawasan bandar selatan.</p>
+
+<table class="narrow">
+<tr><th>Kumpulan</th><th class="num">Model A (Anggaran)</th><th class="num">Model B (Anggaran)</th><th class="num">2022 (Anggaran)</th></tr>
+<tr><td>Melayu</td><td class="num">~77.3%</td><td class="num">~73.8%</td><td class="num">~66%</td></tr>
+<tr><td>Cina</td><td class="num">~61.7%</td><td class="num">~59.4%</td><td class="num">~45%</td></tr>
+<tr><td>India &amp; Lain</td><td class="num">~57.1%</td><td class="num">~50–53%</td><td class="num">~27%</td></tr>
+</table>
+<div class="callout warn"><b>Triangulasi dengan tinjauan ILHAM Centre (Seksyen 02A):</b> ILHAM meramalkan sebelum pengundian bahawa PH memerlukan sekurang-kurangnya 65% turnout Cina untuk mengekalkan kelebihan di kerusi bandar/separa bandar. Anggaran turnout Cina sebenar (~59–62%) berada tepat di bawah ambang kritikal ini — walaupun ia meningkat mendadak berbanding 2022 (~45%). Ini menunjukkan dua sumber bebas (tinjauan lapangan pra-pilihan raya dan inferens ekologi pasca-pilihan raya) tiba pada kesimpulan yang serasi.</div>
+
+<div class="callout">
+<b>Mitos dipatahkan:</b> "Keluar mengundi tinggi membantu pembangkang" — tidak berlaku di Johor kali ini. Kerusi dengan turnout tertinggi menghasilkan majoriti BN terbesar (korelasi +0.62). Lonjakan turnout hampir tiada kaitan dengan ayunan swing kepada BN (korelasi −0.08).
+</div>
+</section>
+
+<!-- 09 SWING -->
+<section class="section" id="swing">
+<h2><span class="num">09</span>Analisis Peralihan Undi (Vote Swing)</h2>
+
+<h3>Ke Mana Perginya Undi PN?</h3>
+<p><b>Fakta (pemerhatian):</b> PN bertanding hanya 33 kerusi (2022: 56) dengan 23 kerusi tanpa calon langsung. Undi PN jatuh daripada 334,457 (24.0%) kepada 102,090 (5.45%) — kehilangan 232,367 undi. Di kerusi yang PN masih bertanding, ia hanya mengekalkan kira-kira separuh (47.7%) daripada undi 2022 sendiri, dan hilang wang pertaruhan di 21 daripada 33 kerusi.</p>
+<p><span class="source-tag est">ANGGARAN</span> Beberapa spesifikasi model berbeza konsisten dengan anggaran <b>187,000–232,000 undi tambahan BN (36–45% daripada keseluruhan tambahan +518,806, anggaran pusat ~220,000 / ~42%)</b> berasal daripada takungan sokongan yang sebelum ini memihak PN. Di 23 kerusi tanpa calon PN, kenaikan undi BN hampir menyamai keseluruhan takungan undi PN 2022 di situ (nisbah kasar 88.9%). Regresi menunjukkan aliran undi lepas PN ke BN pada kecerunan 0.66 (di kerusi PN masih bertanding) dan 0.86 (di kerusi PN tiada calon).</p>
+<div class="callout warn"><b>Selari dengan tinjauan ILHAM Centre (Seksyen 02A):</b> Dapatan kualitatif pra-pilihan raya ILHAM — bahawa penyokong PAS di kerusi majoriti Melayu memberi "sokongan taktikal" kepada BN susulan ketegangan PAS-BERSATU — memberikan penjelasan mekanisme tingkah laku bagi angka statistik ini, terutamanya kecerunan pemindahan tertinggi (0.86) di kerusi PN tiada calon.</div>
+
+<h3>DAP Lawan MCA — Adakah Pengundi Cina Berpindah?</h3>
+<p>Ujian paling tepat: 13 kerusi yang menyaksikan DAP menentang MCA secara langsung pada kedua-dua PRN 2022 dan 2026.</p>
+<table>
+<tr><th>Kerusi</th><th class="num">DAP 2022→2026</th><th class="num">Perubahan DAP</th><th class="num">MCA 2022→2026</th><th class="num">Perubahan MCA</th></tr>
+<tr><td>Jementah</td><td class="num">40.9%→42.9%</td><td class="num up">+2.0</td><td class="num">37.6%→46.3%</td><td class="num up">+8.7</td></tr>
+<tr><td>Bekok</td><td class="num">25.3%→36.8%</td><td class="num up">+11.6</td><td class="num">51.3%→63.2%</td><td class="num up">+11.9</td></tr>
+<tr><td>Tangkak</td><td class="num">40.9%→43.6%</td><td class="num up">+2.7</td><td class="num">39.0%→56.4%</td><td class="num up">+17.4</td></tr>
+<tr><td>Bentayan</td><td class="num">64.5%→64.1%</td><td class="num down">−0.5</td><td class="num">20.6%→35.9%</td><td class="num up">+15.4</td></tr>
+<tr><td>Yong Peng</td><td class="num">38.2%→39.8%</td><td class="num up">+1.7</td><td class="num">52.8%→60.2%</td><td class="num up">+7.3</td></tr>
+<tr><td>Penggaram</td><td class="num">53.7%→54.6%</td><td class="num up">+0.9</td><td class="num">24.3%→45.4%</td><td class="num up">+21.1</td></tr>
+<tr><td>Mengkibol</td><td class="num">58.9%→54.9%</td><td class="num down">−4.0</td><td class="num">28.9%→45.1%</td><td class="num up">+16.3</td></tr>
+<tr><td>Paloh</td><td class="num">33.4%→29.6%</td><td class="num down">−3.8</td><td class="num">55.1%→66.4%</td><td class="num up">+11.3</td></tr>
+<tr><td>Johor Jaya</td><td class="num">41.7%→42.9%</td><td class="num up">+1.2</td><td class="num">37.7%→53.8%</td><td class="num up">+16.1</td></tr>
+<tr><td>Stulang</td><td class="num">44.8%→47.3%</td><td class="num up">+2.5</td><td class="num">34.6%→45.6%</td><td class="num up">+11.1</td></tr>
+<tr><td>Skudai</td><td class="num">58.5%→58.7%</td><td class="num up">+0.2</td><td class="num">27.6%→36.2%</td><td class="num up">+8.6</td></tr>
+<tr><td>Senai</td><td class="num">51.8%→52.1%</td><td class="num up">+0.3</td><td class="num">33.2%→44.3%</td><td class="num up">+11.1</td></tr>
+<tr><td>Pekan Nanas</td><td class="num">28.9%→27.8%</td><td class="num down">−1.2</td><td class="num">51.5%→72.2%</td><td class="num up">+20.7</td></tr>
+<tr style="font-weight:700;"><td>PURATA</td><td></td><td class="num up">+1.1 mata</td><td></td><td class="num up">+13.6 mata</td></tr>
+</table>
+<p><b>Jawapan kepada "adakah pengundi Cina tinggalkan DAP untuk MCA": tidak, pada skala negeri.</b> Bahagian DAP tidak jatuh (purata +1.1 mata). Bahagian MCA melonjak +13.6 mata, tetapi sumbernya ialah takungan undi "penjuru ketiga" (PN, MUDA, calon lain) yang runtuh, bukan asas Cina DAP.</p>
+
+<h3>Kesan BERSAMA</h3>
+<p>Anggaran pusat kebocoran undi PH kepada BERSAMA ialah sekitar <b>4.3% daripada asas PH 2022</b> (had atas mekanikal 14.4%; diagnostik alternatif 11.1%), dan secara statistik tidak dapat dipastikan berbeza daripada sifar. Kajian kes terbaik (andaian kesemua undi BERSAMA "kembali" kepada PH) hanya mengubah keputusan di dua kerusi paling tipis — <b>Perling dan Bukit Batu</b> — menjadikan senario terbaik PH 46/10.</p>
+
+<div class="chart-box"><canvas id="chartSankeyApprox"></canvas></div>
+<p class="footnote">Nota: carta di atas ialah anggaran pergerakan blok undi 2022→2026 berdasarkan jadual perbandingan (Seksyen 21), bukan carta Sankey sebenar daripada dashboard iprom.org.</p>
+</section>
+
+<!-- 10 KAUM -->
+<section class="section" id="kaum">
+<h2><span class="num">10</span>Analisis Prestasi Mengikut Kaum</h2>
+<table class="narrow">
+<tr><th>Swing 2022→2026</th><th>Kepada BN</th><th>Kepada PH</th><th>Kepada PN</th></tr>
+<tr><td>Melayu</td><td class="num">+22.4 [18.5, 26.3]</td><td class="num">+5.0 (tidak signifikan)</td><td class="num">−20.1 [−25.4, −14.8]</td></tr>
+<tr><td>Cina</td><td class="num">+6.9 [0.5, 13.4]</td><td class="num">+7.4 (tidak signifikan)</td><td class="num">—</td></tr>
+<tr><td>India</td><td colspan="3">Tidak dapat dikenal pasti — 7% daripada daftar pemilih, maksimum 18.7% dalam mana-mana satu kerusi.</td></tr>
+</table>
+<p>Angka tunggal paling penting: <b>swing Melayu +22.4 mata kepada BN</b>, menyerap hampir keseluruhan keruntuhan Melayu PN (−20.1 mata). Anjakan Cina ke BN (+6.9 mata) adalah lemah dan hanya wujud di pekan-pekan kecil dengan penyandang BN/MCA.</p>
+
+<h3>Soalan 1: Adakah benar pengundi Cina tinggalkan DAP untuk MCA?</h3>
+<p><b>Tidak, pada skala negeri.</b> Lihat analisis 13 kerusi DAP-lawan-MCA di Seksyen 09 — bahagian DAP kekal stabil; lonjakan MCA datang daripada keruntuhan undi PN/pihak ketiga.</p>
+
+<h3>Soalan 2: Adakah benar undi PN pergi ke BN?</h3>
+<p><b>Ya — corak paling konsisten dengan data</b>, dan turut disahkan secara bebas oleh tinjauan kualitatif pra-pilihan raya ILHAM Centre (sokongan taktikal PAS kepada BN, Seksyen 02A).</p>
+
+<h3>Soalan 3: Apakah kesan pengundi muda terhadap PH?</h3>
+<p><b>Sifar — mitos "anak muda sokong PH" adalah artifak dua kerusi.</b> Tinjauan ILHAM Centre menyediakan penjelasan mekanisme: pengundi muda (48% pengundi) bersifat "candidate-centric" dan "late decider" — pilihan mereka bergantung kepada calon individu, bukan kesetiaan parti yang boleh diramal (Seksyen 02A).</p>
+
+<h3>Soalan 4: Adakah undi BERSAMA mengacau undi PH?</h3>
+<p><b>Marginal secara negeri, tetapi menentukan di dua kerusi.</b> Rujuk Seksyen 09.</p>
+
+<h3>Soalan 5: Apa makna keputusan PRN Johor kepada PRN Negeri Sembilan?</h3>
+<p>Rujuk Seksyen 30 (Lessons Learned) untuk senarai penuh iktibar strategik.</p>
+</section>
+
+<!-- 11 GEOGRAFI -->
+<section class="section" id="geografi">
+<h2><span class="num">11</span>Prestasi Mengikut Kawasan Bandar, Separa Bandar dan Luar Bandar</h2>
+<p>Lapan kerusi PH yang terselamat tertumpu sepenuhnya di jalur bandar Johor Bahru–Skudai dan poket-poket majoriti Cina. Selebihnya — pantai timur, tengah, dan utara Johor — disapu sepenuhnya oleh BN.</p>
+<p>Corak geografi lonjakan turnout jelas: <b>jalur bandar JB melonjak paling tinggi (+19 hingga +20 mata)</b>, pekan-pekan kecil Cina di utara ketinggalan (+9 hingga +12 mata), dan pantai timur (Endau, Tenggaroh) paling perlahan.</p>
+<div class="callout blue"><b>Dua dunia turnout yang berbeza:</b> Bandar Seremban (rujukan untuk NS) dan pekan kecil pedalaman adalah dua dunia berbeza dari segi turnout walaupun komposisi kaum serupa di atas kertas.</div>
+</section>
+
+<!-- 12 SENTIMEN -->
+<section class="section" id="sentimen">
+<h2><span class="num">12</span>Analisis Media Sosial dan Sentimen</h2>
+<p class="lede">Sumber utama seksyen ini ialah hantaran Facebook naratif oleh Muhamad Harris Nasril ("'THE BIGGEST WINNER' DAN 'THE BIGGEST LOSER' PRN JOHOR", 3.8K tindak balas suka, 1.1K komen, 482 kongsi) — ditulis dalam bentuk dialog satira. Rujuk juga Seksyen 02A untuk dapatan sentimen berasaskan tinjauan lapangan formal (ILHAM Centre) yang lebih boleh dipercayai dari segi metodologi berbanding naratif media sosial anekdot.</p>
+
+<h3>Dakwaan Bilangan Calon (media sosial, tidak sepenuhnya sepadan dengan jadual rasmi)</h3>
+<table class="narrow">
+<tr><th>Parti</th><th class="num">Bertanding (FB)</th><th class="num">Menang (FB)</th><th class="num">Bertanding (Jadual Rasmi)</th></tr>
+<tr><td>UMNO</td><td class="num">37</td><td class="num">36</td><td class="num">37 ✓</td></tr>
+<tr><td>MIC</td><td class="num">4</td><td class="num">4 (100%)</td><td class="num">4 ✓</td></tr>
+<tr><td>MCA</td><td class="num">15</td><td class="num">8</td><td class="num">15 ✓</td></tr>
+<tr><td>DAP</td><td class="num">17</td><td class="num">6</td><td class="num">17 ✓</td></tr>
+<tr><td>PKR</td><td class="num">20</td><td class="num">1</td><td class="num">19 (percanggahan)</td></tr>
+<tr><td>AMANAH</td><td class="num">19</td><td class="num">1</td><td class="num">20 (percanggahan)</td></tr>
+<tr><td>PN (keseluruhan)</td><td class="num">33</td><td class="num">0</td><td class="num">33 ✓</td></tr>
+</table>
+<div class="callout warn"><b>Percanggahan dikesan:</b> Hantaran Facebook menyatakan PKR bertanding 20 kerusi dan AMANAH 19; jadual rasmi post-mortem (pilihanraya.my, Seksyen 4) menunjukkan sebaliknya — AMANAH 20, PKR 19. Laporan ini menggunakan angka jadual rasmi sebagai rujukan utama.</div>
+
+<h3>Naratif Punca Kemenangan BN (mengikut sentimen awam / anekdot)</h3>
+<ul>
+<li><b>Populariti Onn Hafiz &amp; kesan "serangan jadi simpati":</b> Serangan berlebihan dan peribadi terhadap Onn Hafiz sepanjang kempen didakwa menjadi modal simpati kepadanya. Dapatan ini turut disahkan secara lebih formal oleh tinjauan ILHAM Centre — populariti Onn Hafiz 79% berbanding Anwar Ibrahim 40% (Seksyen 02A).</li>
+<li><b>Faktor sentimen Najib Razak:</b> Naratif turun padang dan naratif PH sendiri ("UMNO menang besar, Najib bebas") didakwa menguatkan sokongan penyokong setia Najib.</li>
+<li><b>Kontroversi Nga Kor Ming:</b> Menteri KPKT Nga Kor Ming didakwa membuat kenyataan bertaruh tinggi bahawa beliau akan meletak jawatan sekiranya UMNO menang besar dan Najib dibebaskan — mewujudkan tekanan awam berterusan selepas keputusan.</li>
+<li><b>"Tsunami Bangsa Johor":</b> Istilah bagi gelombang "senyap" pengundi Melayu yang keluar mengundi dalam jumlah besar tanpa kebisingan awam.</li>
+</ul>
+
+<div class="callout red">
+<b>Percanggahan penting dengan analisis statistik (Seksyen 7–8):</b> Naratif media sosial mendakwa "pengundi Melayu turun beramai-ramai, pengundi Cina pula tidak keluar seramai dijangkakan (boikot)". Model ekologi mendapati lonjakan turnout paling tinggi secara <i>berkadar</i> adalah bukan-Melayu, walaupun <i>aras mutlak</i> turnout Melayu kekal lebih tinggi. Tinjauan ILHAM Centre (Seksyen 02A) menawarkan jambatan antara kedua-dua pandangan: turnout Cina memang naik ketara berbanding 2022, tetapi gagal mencecah ambang ~65% yang diperlukan PH — jadi kedua-dua "naik" dan "tidak mencukupi" adalah benar serentak, bergantung kepada rangka rujukan yang digunakan.
+</div>
+</section>
+
+<!-- 13 FAKTOR MENANG BN -->
+<section class="section" id="menang-bn">
+<h2><span class="num">13</span>Faktor-faktor Kemenangan BN</h2>
+<ol>
+<li><b>Penerima utama keruntuhan PN.</b> 36–45% daripada tambahan undi BN (~220,000 undi) berasal daripada takungan bekas PN.</li>
+<li><b>Kepimpinan Menteri Besar yang sangat popular.</b> Onn Hafiz bin Ghazi (menang Machap dengan majoriti 15,375, 60.6%) mencatatkan populariti 79% dalam tinjauan ILHAM Centre — hampir dua kali ganda populariti Perdana Menteri Anwar Ibrahim (40%) dalam konteks pilihan raya negeri (Seksyen 02A).</li>
+<li><b>"Setting" PRN yang dieksploitasi sepenuhnya oleh BN.</b> Menurut ILHAM Centre, BN menyusun kempen berdasarkan karakter sebenar pilihan raya negeri (prestasi kerajaan negeri, isu tempatan) manakala PH kekal terikat kepada kerangka PRU-15 — perbezaan bacaan strategik yang menentukan rentak keseluruhan kempen.</li>
+<li><b>Sokongan taktikal daripada penyokong PN/PAS yang kecewa.</b> Ketegangan PAS-BERSATU menyebabkan sebahagian penyokong PN memilih BN sebagai pilihan lebih "berdaya kemenangan" (ILHAM Centre, Seksyen 02A) — selari dengan anggaran statistik pemindahan undi PN→BN (Seksyen 09).</li>
+<li><b>Serangan lawan yang berlebihan berbalik menjadi simpati</b> — turut disebut dalam naratif media sosial (Seksyen 12).</li>
+<li><b>Coattail effect merentasi seluruh tiket BN.</b> Ketiga-tiga komponen (UMNO +88%, MCA +77%, MIC +105%) tumbuh melebihi kadar pertumbuhan undi negeri (34.8%).</li>
+<li><b>Turnout tinggi yang menguntungkan kerusi dengan majoriti besar.</b> Korelasi +0.62 antara turnout dan majoriti.</li>
+<li><b>Anjakan struktur daftar pemilih.</b> Pengundi baharu (60.7% Melayu) menganjak asas pengundi negeri ke arah komposisi yang secara sejarah lebih menyebelahi BN/UMNO.</li>
+</ol>
+</section>
+
+<!-- 14 FAKTOR KALAH PH -->
+<section class="section" id="kalah-ph">
+<h2><span class="num">14</span>Faktor-faktor Kekalahan PH</h2>
+<ol>
+<li><b>"Paradoks pertumbuhan":</b> PH menambah ~196,000–244,000 undi tetapi jumlah undi sah negeri berkembang 34.8% — bahagian pasaran politik PH mengecil walaupun undi mutlak bertambah.</li>
+<li><b>Turnout Cina gagal mencecah ambang kritikal.</b> ILHAM Centre meramalkan PH memerlukan sekurang-kurangnya 65% turnout Cina untuk mengekalkan kelebihan; turnout sebenar (~59–62%, anggaran ekologi) berada di bawah ambang ini (Seksyen 02A &amp; 08) — bukan disebabkan peralihan sokongan ke BN, tetapi kecenderungan pengundi Cina yang "tawar hati" untuk tidak keluar mengundi.</li>
+<li><b>Terlalu bergantung kepada kerangka PRU-15 dan karisma Perdana Menteri.</b> Menurut ILHAM Centre, PH menjadikan pencapaian PRU-15 sebagai asas jangkaan tanpa menyedari dinamika PRN yang berbeza; ramai pengundi tidak dapat menyatakan tema kempen PH selain seruan menyokong kerajaan persekutuan.</li>
+<li><b>Terperangkap dalam kubu etnik.</b> Sokongan PH adalah fungsi hampir langsung komposisi Cina (R²=0.95); PH hanya bertahan pada kerusi melebihi ~51.6% komposisi Cina.</li>
+<li><b>Percubaan mengubah rentak kempen gagal direalisasikan</b> — contohnya cadangan perdebatan Maszlee Malik–Onn Hafiz tidak berjaya dilaksanakan (ILHAM Centre); naratif integriti/akauntabiliti gagal mengatasi tumpuan pengundi kepada isu "bread-and-butter" (kos sara hidup, pekerjaan, mobiliti ke Singapura, perumahan, kesesakan lalu lintas).</li>
+<li><b>Tiada bukti peralihan bersih daripada bekas penyokong PN.</b> Takungan PN yang runtuh mengalir kepada BN, bukan PH.</li>
+<li><b>Kebocoran BERSAMA di kerusi paling tipis</b> — cukup untuk menentukan Perling dan Bukit Batu.</li>
+<li><b>Mitos "sokongan anak muda" tidak wujud</b> — pengundi muda bersifat candidate-centric/late-decider (ILHAM Centre), bukan menyokong jenama PH secara konsisten.</li>
+</ol>
+</section>
+
+<!-- 15 FAKTOR KALAH AMANAH -->
+<section class="section" id="kalah-amanah">
+<h2><span class="num">15</span>Faktor-faktor Kekalahan Amanah</h2>
+<p>AMANAH meletakkan 20 calon dan hanya mempertahankan 1 kerusi (nisbah penukaran 5%) — nisbah terendah antara ketiga-tiga komponen PH. Walaupun undi AMANAH meningkat 60% (103,514 → 165,777), pertumbuhan ini gagal diterjemah kepada kerusi tambahan kerana:</p>
+<ul>
+<li><b>Kebanyakan calon AMANAH bertanding di kerusi majoriti Melayu</b> — segmen pengundi yang sama mencatat swing +22.4 mata kepada BN.</li>
+<li><b>Ketiadaan "kubu etnik" seperti DAP</b> di kerusi majoriti Cina yang menyelamatkan komponen PH lain.</li>
+<li><b>Konsisten dengan penilaian ILHAM Centre</b> bahawa PH secara keseluruhan gagal membina naratif tempatan yang meyakinkan di kerusi Melayu majoriti/campuran — AMANAH sebagai komponen PH yang paling bergantung kepada segmen ini terjejas paling teruk.</li>
+<li><b>Data terhad pada peringkat calon.</b> Sumber yang ada tidak menyediakan pecahan penuh keputusan setiap 20 calon AMANAH secara individu.</li>
+</ul>
+</section>
+
+<!-- 16 PRESTASI CALON -->
+<section class="section" id="calon">
+<h2><span class="num">16</span>Prestasi Calon</h2>
+<table>
+<tr><th>Calon</th><th>DUN</th><th>Parti</th><th>Catatan</th></tr>
+<tr><td>Onn Hafiz bin Ghazi</td><td>N.26 Machap</td><td><span class="tag bn">BN</span></td><td>Menteri Besar yang mempertahankan kerusi dengan majoriti 15,375 (60.6%); wajah utama kempen BN negeri; populariti 79% menurut tinjauan ILHAM Centre.</td></tr>
+<tr><td>Pannir Selvam ("Zorro" — menurut media sosial)</td><td>N.46 Perling</td><td><span class="tag bn">BN</span> (MIC)</td><td>Merampas kerusi daripada penyandang PH terkenal Liew Chin Tong dengan majoriti tipis 1,611 (2.4%).</td></tr>
+<tr><td>Nazri bin Abdul Rahman</td><td>N.13 Simpang Jeram</td><td><span class="tag ph">PH</span></td><td>Mempertahankan kerusi dengan majoriti terkecil negeri — 170 undi (0.6%), lebih rendah daripada jumlah undi rosak (297).</td></tr>
+<tr><td>Kumaran a/l Rama Krishnan</td><td>N.51 Bukit Batu</td><td><span class="tag bn">BN</span></td><td>Merampas kerusi PH dengan majoriti 174 (0.5%), salah satu daripada 8 kerusi sengit yang dikenal pasti ILHAM Centre sebelum pilihan raya.</td></tr>
+<tr><td>Andrew Chen Kah Eng</td><td>N.45 Stulang</td><td><span class="tag ph">PH</span></td><td>Mempertahankan kerusi bandar dengan majoriti tipis 623 (1.7%).</td></tr>
+<tr><td>Maszlee bin Malik</td><td>N.41 Puteri Wangsa</td><td><span class="tag ph">PH</span></td><td>Merampas semula kerusi daripada MUDA dengan majoriti 5,744 (6.7%) — satu-satunya daripada 8 kerusi sengit ILHAM yang akhirnya kekal/jatuh kepada PH; cadangan perdebatan beliau dengan Onn Hafiz tidak direalisasikan sepanjang kempen.</td></tr>
+<tr><td>Baharudin bin Mohamed Taib</td><td>N.43 Permas</td><td><span class="tag bn">BN</span></td><td>Meraih majoriti terbesar negeri — 29,505 undi (37.3%).</td></tr>
+<tr><td>Alwiyah binti Talib ("Kak Awi")</td><td>N.32 Endau</td><td><span class="tag pn">PN</span> (2022) → <span class="tag bn">BN</span> (2026)</td><td>Calon yang sama memenangi kerusi yang sama di bawah tiket parti berbeza.</td></tr>
+</table>
+<div class="callout warn"><b>Had data:</b> Sumber tidak menyediakan senarai penuh 172 calon berserta pecahan undi individu setiap kerusi.</div>
+</section>
+
+<!-- 17 JENTERA PARTI -->
+<section class="section" id="jentera">
+<h2><span class="num">17</span>Prestasi Jentera Parti</h2>
+<table class="narrow">
+<tr><th>Parti</th><th class="num">Nisbah Menang/Tanding</th><th>Penilaian Jentera</th></tr>
+<tr><td>MIC</td><td class="num">4/4 = 100%</td><td>Cemerlang — strike rate sempurna, termasuk rampasan Perling</td></tr>
+<tr><td>UMNO</td><td class="num">36/37 = 97.3%</td><td>Cemerlang — hampir sapu bersih</td></tr>
+<tr><td>MCA</td><td class="num">8/15 = 53.3%</td><td>Kukuh — melebihi bilangan kerusi DAP walaupun bertanding lebih sedikit</td></tr>
+<tr><td>DAP</td><td class="num">6/17 = 35.3%</td><td>Sederhana — komponen PH paling produktif tetapi kehilangan 4 kerusi</td></tr>
+<tr><td>PKR</td><td class="num">1/19 = 5.3%</td><td>Lemah — jentera tidak dapat menembusi kerusi campuran/Melayu majoriti</td></tr>
+<tr><td>AMANAH</td><td class="num">1/20 = 5.0%</td><td>Lemah — lihat Seksyen 15</td></tr>
+<tr><td>BERSATU</td><td class="num">0/16 = 0%</td><td>Runtuh — kehilangan kedua-dua kerusi 2022</td></tr>
+<tr><td>PAS</td><td class="num">0/11 = 0%</td><td>Runtuh — kehilangan satu-satunya kerusi 2022</td></tr>
+<tr><td>BERSAMA</td><td class="num">0/15 = 0%</td><td>Jentera baharu, belum matang; kontroversi calon menenggelamkan naratif alternatif (ILHAM Centre)</td></tr>
+</table>
+<p>Jentera BN (khususnya UMNO dan MIC) menunjukkan keberkesanan operasi yang sangat tinggi. Menurut ILHAM Centre, keunggulan jentera BN turut disokong oleh calon yang lebih awal bekerja di kawasan (ground work) berbanding calon baharu pembangkang yang bergelut membina pengenalan dalam tempoh kempen 14 hari yang singkat.</p>
+</section>
+
+<!-- 18 STRATEGI KEMPEN -->
+<section class="section" id="strategi-kempen">
+<h2><span class="num">18</span>Analisis Strategi Kempen</h2>
+<ul>
+<li><b>BN — strategi "setting PRN" yang disesuaikan tepat:</b> Menurut ILHAM Centre, BN menyusun kempen berdasarkan pemahaman jelas bahawa pengundi PRN menilai prestasi kerajaan negeri, bukan sentimen nasional — fokus kepada kesinambungan pentadbiran, kestabilan politik dan personaliti Onn Hafiz yang disokong projek pembangunan (RTS, Data Centre, JS-SEZ) dan bantuan tunai negeri.</li>
+<li><b>PH — terperangkap dalam kerangka PRU-15:</b> ILHAM mendapati PH menjadikan pencapaian PRU-15 (turnout 74.9%-75.3%, sentimen nasional kuat) sebagai asas jangkaan, sedangkan dinamika PRN (turnout lebih rendah, fokus tempatan) amat berbeza. Percubaan mengalihkan rentak kempen (contoh: cadangan perdebatan Maszlee Malik–Onn Hafiz) gagal direalisasikan; naratif integriti/akauntabiliti gagal mengatasi tumpuan pengundi kepada isu harian.</li>
+<li><b>Mobilisasi ceramah besar-besaran &amp; media sosial PH:</b> Ceramah finale dihadiri ramai dan media sosial "meriah" mewujudkan tanggapan gelombang sokongan besar — tetapi gelombang sebenar (turnout Melayu tinggi + limpahan PN ke BN) tidak ditangkap oleh persepsi kempen di atas pentas/media sosial.</li>
+<li><b>Nga Kor Ming — kenyataan bertaruh tinggi:</b> Ikrar meletak jawatan bersyarat adalah strategi retorik berisiko tinggi yang gagal apabila senario terburuk (BN menang besar) berlaku.</li>
+<li><b>PN — kempen serangan peribadi berlebihan tanpa naratif hala tuju yang jelas:</b> Selain serangan personaliti terhadap Onn Hafiz yang berbalik menjadi simpati, ILHAM Centre turut mengenal pasti kelemahan struktur lebih dalam — ketegangan PAS-BERSATU dan kegagalan menampilkan kepimpinan/strategi jelas menghakis keyakinan penyokong tradisi PN terhadap kesepaduan gabungan.</li>
+<li><b>MUDA &amp; BERSAMA — strategi memperkenalkan jenama yang gagal mendapat tumpuan:</b> Menurut ILHAM, MUDA terlalu bergantung kepada populariti tunggal Syed Saddiq (yang tidak diterjemah kepada sokongan meluas apabila bertanding bersendirian), manakala BERSAMA terperangkap dalam kontroversi calon yang menenggelamkan naratif "generasi baharu" yang cuba dibawa.</li>
+</ul>
+</section>
+
+<!-- 19 ISU TEMPATAN -->
+<section class="section" id="isu-tempatan">
+<h2><span class="num">19</span>Analisis Isu-isu Tempatan</h2>
+<p>Tinjauan ILHAM Centre (Seksyen 02A) mengenal pasti isu "bread-and-butter" sebagai pertimbangan utama merentasi kaum, umur dan kawasan: <b>kos sara hidup, peluang pekerjaan, mobiliti harian ke Singapura, perumahan mampu milik, dan kesesakan lalu lintas.</b> Naratif prestasi ekonomi Johor di bawah Onn Hafiz — dikaitkan dengan projek RTS, Data Centre, dan Johor-Singapore Special Economic Zone (JS-SEZ) serta bantuan tunai kerajaan negeri — menjadi modal kempen utama BN yang mudah diterjemahkan kepada pengalaman harian rakyat.</p>
+<p>Sebaliknya, PH gagal menampilkan tema isu tempatan yang jelas; ramai responden ILHAM tidak dapat menyatakan tema utama kempen PH selain seruan menyokong kerajaan persekutuan. Perang mulut Menteri Besar–Perdana Menteri lebih banyak berlegar di TikTok dan Facebook tanpa membentuk sentimen dominan di akar umbi.</p>
+</section>
+
+<!-- 20 ISU NASIONAL -->
+<section class="section" id="isu-nasional">
+<h2><span class="num">20</span>Analisis Isu Nasional yang Mempengaruhi Pengundian</h2>
+<ul>
+<li><b>Status Najib Razak:</b> Sentimen berkaitan Najib menjadi subteks emosi bagi sebahagian penyokong UMNO, walaupun keputusan PRN negeri secara fakta tidak memberi kesan langsung terhadap status undang-undang beliau.</li>
+<li><b>Persaingan populariti Anwar Ibrahim vs Onn Hafiz:</b> ILHAM Centre merekodkan populariti Anwar pada 40% berbanding Onn Hafiz 79% dalam konteks PRN — menunjukkan walaupun kedua-dua pemimpin berkempen agresif, pengundi menilai prestasi negeri lebih tinggi daripada pengaruh persekutuan dalam "setting" PRN.</li>
+<li><b>Kenyataan Menteri Persekutuan (Nga Kor Ming, KPKT):</b> Kenyataan yang mengaitkan prestasi PRN negeri dengan pendirian peribadi/politiknya menyebabkan isu ini menjadi perbualan nasional pasca-pilihan raya.</li>
+<li><b>Kredibiliti pentadbiran Madani/PMX secara umum:</b> Kejatuhan mendadak keluarga PH berbanding PRU15 2022 (Seksyen 22) mencadangkan kemerosotan sokongan yang lebih luas berbanding hanya faktor negeri semata-mata; ILHAM turut mengesahkan PH "terlalu bergantung kepada pengaruh Perdana Menteri" tanpa berjaya menterjemah ini kepada momentum tempatan.</li>
+</ul>
+</section>
+
+<!-- 21 BANDING 2022 -->
+<section class="section" id="banding2022">
+<h2><span class="num">21</span>Perbandingan Dengan PRN Johor 2022</h2>
+<table>
+<tr><th>Metrik</th><th class="num">PRN15 (Mac 2022)</th><th class="num">PRN16 (Julai 2026)</th><th>Perubahan</th></tr>
+<tr><td>Kerusi BN</td><td class="num">40</td><td class="num">48</td><td class="num up">+8</td></tr>
+<tr><td>Kerusi PH</td><td class="num">12 (13 termasuk MUDA)</td><td class="num">8</td><td class="num down">−4 hingga −5</td></tr>
+<tr><td>Kerusi PN</td><td class="num">3</td><td class="num">0</td><td class="num down">−3</td></tr>
+<tr><td>Kerusi MUDA</td><td class="num">1</td><td class="num">0</td><td class="num down">−1</td></tr>
+<tr><td>Daftar Pemilih</td><td class="num">2,597,742</td><td class="num">2,727,926</td><td class="num up">+130,184</td></tr>
+<tr><td>Keluar Mengundi</td><td class="num">54.5%</td><td class="num">69.6%</td><td class="num up">+15.0 mata</td></tr>
+<tr><td>Undi Sah</td><td class="num">1,391,162</td><td class="num">1,874,918</td><td class="num up">+483,756 (+34.8%)</td></tr>
+<tr><td>Undi BN</td><td class="num">599,753 (43.1%)</td><td class="num">1,118,559 (59.7%)</td><td class="num up">+518,806 (+86.5%)</td></tr>
+<tr><td>Undi PH</td><td class="num">415,597 (29.9%)</td><td class="num">611,983 (32.6%)</td><td class="num up">+196,386 (+47.3%)</td></tr>
+<tr><td>Undi PN</td><td class="num">334,457 (24.0%)</td><td class="num">102,090 (5.4%)</td><td class="num down">−232,367 (−69.5%)</td></tr>
+<tr><td>Undi Rosak</td><td class="num">25,953 (1.82%)</td><td class="num">20,648 (1.09%)</td><td class="num down">−0.73 mata</td></tr>
+<tr><td>Purata Calon/DUN</td><td class="num">4.3</td><td class="num">3.1</td><td class="num down">−1.2</td></tr>
+<tr><td>Majoriti Median</td><td class="num">18.3%</td><td class="num">35.5%</td><td class="num up">+17.2 mata (2× ganda)</td></tr>
+</table>
+<div class="chart-box"><canvas id="chartCompare2022"></canvas></div>
+<p><b>BN mendapat 518,806 undi tambahan, sedangkan jumlah undi sah negeri hanya bertambah 483,756</b> — bermakna pertambahan undi BN bersamaan 107.2% daripada pertumbuhan keseluruhan, menunjukkan bahawa BN menerima limpahan dari pengundi luar yang tidak mengundinya sebelum ini, dalam kes ini ialah pengundi PN. </p>
+</section>
+
+<!-- 22 BANDING LAIN -->
+<section class="section" id="banding-lain">
+<h2><span class="num">22</span>Perbandingan Dengan Pilihan Raya Sebelum Ini (Tiga Pilihan Raya, Satu Badan Pengundi)</h2>
+<p class="lede">Perbandingan dengan PRN 2022 mempunyai satu kelemahan: keluar mengundi 2022 hanya 54.5%. Penanda aras yang lebih tegas ialah <b>PRU15 (November 2022)</b> — pengundi asas yang sama, keluar mengundi 75.3%.</p>
+<table>
+<tr><th>Metrik</th><th class="num">PRN15 (Mac 2022)</th><th class="num">PRU15 Parlimen (Nov 2022)</th><th class="num">PRN16 (Julai 2026)</th></tr>
+<tr><td>Daftar Pemilih</td><td class="num">2,597,742</td><td class="num">2,616,575</td><td class="num">2,727,926</td></tr>
+<tr><td>Keluar Mengundi</td><td class="num">54.5%</td><td class="num"><b>75.3%</b></td><td class="num">69.7%</td></tr>
+<tr><td>Undi Sah</td><td class="num">1,391,162</td><td class="num">1,952,458</td><td class="num">1,874,918</td></tr>
+<tr><td>BN</td><td class="num">599,753 (43.1%)</td><td class="num">598,244 (30.6%)</td><td class="num">1,118,559 (59.7%)</td></tr>
+<tr><td>Keluarga PH (PH+PKR+MUDA)</td><td class="num">415,597 (29.9%)</td><td class="num">825,182 (42.3%)</td><td class="num">622,219 (33.2%)</td></tr>
+<tr><td>PN</td><td class="num">334,457 (24.0%)</td><td class="num">519,661 (26.6%)</td><td class="num">102,090 (5.4%)</td></tr>
+</table>
+
+<h3>Empat Dapatan Daripada Bingkai Tiga-Pilihan-Raya</h3>
+<ol>
+<li><b>Teras undi BN Johor hampir tekal pada ~600,000 undi</b> merentasi kedua-dua pilihan raya 2022. Pada 2026, ia melonjak kepada 1.12 juta — tambahan ~520,000, hampir tepat sama dengan kehilangan PN berbanding PRU15 campur pertumbuhan daftar pemilih.</li>
+<li><b>"PH kalah sebab turnout PRN rendah" tidak melepasi ujian ini.</b> Turnout 69.7% cuma 5.6 mata di bawah paras PRU. Keluarga PH meraih 622,219 berbanding 825,182 pada PRU15 (−24.6%), manakala BN naik +87.0% — mengesahkan tepat premis ILHAM bahawa PH masih berfikir dalam kerangka PRU sedangkan BN bertanding mengikut setting PRN (Seksyen 02A).</li>
+<li><b>PN hanya mengekalkan 19.6% daripada undi PRU15-nya</b> (519,661 → 102,090). Sayap yang dahulunya dominan (BERSATU, 77% undi PN pada PRU15) paling teruk runtuh — konsisten dengan dapatan ILHAM mengenai ketegangan PAS-BERSATU.</li>
+<li><b>Peringatan kaedah:</b> PRU15 ialah pilihan raya Parlimen dengan isu nasional dan struktur pertandingan berbeza — penanda aras "siling mobilisasi", bukan garis dasar ramalan.</li>
+</ol>
+</section>
+
+<!-- 23 DAPATAN UTAMA -->
+<section class="section" id="dapatan">
+<h2><span class="num">23</span>Dapatan Utama — Mitos Lawan Fakta</h2>
+<table>
+<tr><th>Mitos</th><th>Apa Data Sebenarnya Menunjukkan</th></tr>
+<tr><td>"Keluar mengundi tinggi membantu pembangkang"</td><td>Tidak berlaku di Johor kali ini. Korelasi turnout–majoriti BN +0.62; korelasi lonjakan turnout–swing ke BN −0.08.</td></tr>
+<tr><td>"BN menang sebab Melayu turun padu"</td><td>Lonjakan turnout paling tajam (kadar pertumbuhan) ialah bukan-Melayu. BN menang atas aliran undi bekas penyokong PN.</td></tr>
+<tr><td>"Orang Cina dah beralih ke BN"</td><td>Setempat sahaja. Dalam 13 pertarungan langsung DAP-MCA, bahagian DAP kekal stabil.</td></tr>
+<tr><td>"Anak muda menyokong PH"</td><td>Artifak dua kerusi. ILHAM Centre: anak muda "candidate-centric", bukan menyokong jenama PH.</td></tr>
+<tr><td>"BERSAMA pecahkan undi PH sampai PH tumbang"</td><td>28,816 undi sahaja; paling banyak mengubah 2 kerusi tipis.</td></tr>
+<tr><td>"48/8 = mandat dua pertiga rakyat Johor"</td><td>BN dapat 59.7% undi, bukan 86%.</td></tr>
+<tr><td>"Keputusan PRU-15 akan berulang dalam PRN" (andaian PH, menurut ILHAM Centre)</td><td>Tidak berlaku — Keluarga PH turun 24.6% berbanding paras PRU-15; turnout Cina gagal mencecah ambang 65% yang diperlukan.</td></tr>
+</table>
+</section>
+
+<!-- 24 COARK PENGUNDIAN -->
+<section class="section" id="corak">
+<h2><span class="num">24</span>Corak Pengundian</h2>
+<ul>
+<li><b>Korelasi turnout–majoriti: +0.62.</b> Kerusi turnout tinggi = majoriti BN besar.</li>
+<li><b>Korelasi lonjakan turnout–swing ke BN: −0.08.</b> Hampir tiada kaitan.</li>
+<li><b>Sokongan PH ialah fungsi hampir tulen komposisi Cina (R²=0.95, kecerunan 0.915).</b></li>
+<li><b>Komposisi meramal bilangan kerusi PH dengan tepat (8), tetapi tersalah kenal pasti kerusi yang mana.</b></li>
+<li><b>Kadar undi rosak menurun di kerusi lonjakan turnout tertinggi.</b></li>
+<li><b>Median majoriti berganda (18.3% → 35.5%).</b></li>
+<li><b>17% pengundi "late decider"</b> (ILHAM Centre) menyumbang kepada volatiliti tinggi di lapan kerusi sengit yang dikenal pasti sebelum pengundian (Seksyen 02A) — hampir kesemuanya akhirnya jatuh ke arah BN.</li>
+</ul>
+</section>
+
+<!-- 25 TREND BAHARU -->
+<section class="section" id="trend">
+<h2><span class="num">25</span>Trend Baharu Pengundi</h2>
+<ul>
+<li><b>Anjakan struktur daftar pemilih pro-BN:</b> Pengundi baharu 60.7% Melayu berbanding 53.8% dalam keseluruhan roll.</li>
+<li><b>Turnout bukan-Melayu semakin rapat dengan turnout Melayu.</b> Jurang turnout Melayu-Cina menyempit daripada ~22 mata (2022) kepada ~16 mata (2026).</li>
+<li><b>Pengundi gelombang baharu mengundi lebih "bersih"</b> — kadar undi rosak menurun di kerusi lonjakan turnout tertinggi.</li>
+<li><b>Pengundi muda "candidate-centric" dan "late decider" — trend struktur, bukan sekadar ciri kitaran ini.</b> Menurut ILHAM Centre, 48% pengundi adalah golongan muda yang membuat keputusan lewat kempen berdasarkan penilaian calon (komunikasi, rekod perkhidmatan, keterlihatan media sosial) berbanding jenama parti atau pengaruh keluarga — trend yang dijangka berterusan dan bahkan menguat pada PRN/PRU akan datang, memberi kelebihan struktur kepada penyandang berprestasi tanpa mengira parti.</li>
+<li><b>Kemunculan parti serpihan sebagai fenomena berulang</b> — BERSAMA mengikut corak MUDA sebagai parti baharu yang menguji jenama tanpa kejayaan segera, walaupun dilihat pengundi sekadar "kacau daun" (ILHAM Centre) berbanding pilihan ketiga berdaya saing.</li>
+</ul>
+</section>
+
+<!-- 26 RCA -->
+<section class="section" id="rca">
+<h2><span class="num">26</span>Root Cause Analysis — Kemenangan Besar BN &amp; Kejatuhan PN</h2>
+<table class="narrow">
+<tr><th>Peringkat</th><th>Punca</th></tr>
+<tr><td>Gejala</td><td>BN menang 48/56 kerusi (85.7%) dengan hanya 59.7% undi</td></tr>
+<tr><td>Punca Langsung</td><td>Undi BN meningkat 86.5% (+518,806) — melebihi 107% daripada pertumbuhan undi sah negeri</td></tr>
+<tr><td>Punca Pertengahan</td><td>PN kehilangan 69.5% (−232,367) undinya; 36–45% daripada tambahan BN boleh dikesan kepada takungan bekas PN</td></tr>
+<tr><td>Punca Struktur</td><td>PN gagal mengekalkan jentera dan calon (bertanding hanya 33/56 kerusi); ketegangan PAS-BERSATU menghakis imej gabungan sebagai alternatif kerajaan (ILHAM Centre)</td></tr>
+<tr><td>Punca Akar</td><td>Kegagalan PN membina jenama tempatan yang tidak bergantung kepada momentum nasional sekali sahaja (2022); jurang persepsi akar-umbi-elit menghalang penterjemahan sokongan laten kepada jentera berkesan</td></tr>
+</table>
+<p>Bagi PH, root cause kekalan kerusi ialah: pertumbuhan undi organik yang secara struktur tidak mencukupi kerana pasaran berkembang 34.8%, digabungkan dengan kegagalan strategik membaca "setting" PRN (ILHAM Centre) dan ketiadaan strategi meluas ke luar kubu etnik Cina.</p>
+</section>
+
+<!-- 27 SWOT -->
+<section class="section" id="swot">
+<h2><span class="num">27</span>SWOT Analysis (Pakatan Harapan, pasca-PRN Johor)</h2>
+<div class="swot">
+<div class="s"><h4>Kekuatan (Strengths)</h4><ul>
+<li>Pertumbuhan undi mutlak +47.3% — asas sokongan tidak menyusut</li>
+<li>Kekal dominan di kerusi majoriti Cina bandar (R²=0.95)</li>
+<li>DAP kekal jentera paling produktif (35.3% penukaran calon-ke-kerusi)</li>
+</ul></div>
+<div class="w"><h4>Kelemahan (Weaknesses)</h4><ul>
+<li>AMANAH &amp; PKR nisbah menang <6% — jentera lemah di luar kubu Cina</li>
+<li>Tiada tema kempen tempatan yang jelas — terlalu bergantung karisma PM (ILHAM Centre)</li>
+<li>Tiada bukti kemasukan pengundi Melayu/bekas-PN</li>
+<li>Risiko mesej pemimpin (kes Nga Kor Ming) memberi kelemahan naratif</li>
+</ul></div>
+<div class="o"><h4>Peluang (Opportunities)</h4><ul>
+<li>Jurang turnout Melayu-Cina menyempit — ruang mobilisasi lanjut bukan-Melayu</li>
+<li>Kekosongan PN sepenuhnya di Johor — ruang vakum ideologi untuk direbut</li>
+<li>Pengundi muda "candidate-centric" bermakna calon berprestasi tinggi PH boleh menembusi kubu bukan tradisional tanpa bergantung jenama parti</li>
+</ul></div>
+<div class="t"><h4>Ancaman (Threats)</h4><ul>
+<li>Anjakan struktur daftar pemilih (60.7% Melayu pengundi baharu)</li>
+<li>BN coattail effect yang sangat kuat, disokong "setting PRN" yang tepat</li>
+<li>Kubu PH boleh "terperangkap" jika lawan fokus kerusi campuran</li>
+</ul></div>
+</div>
+</section>
+
+<!-- 28 PESTLE -->
+<section class="section" id="pestle">
+<h2><span class="num">28</span>PESTLE Analysis</h2>
+<table>
+<tr><th>Dimensi</th><th>Pemerhatian &amp; Implikasi</th></tr>
+<tr><td><b>Politikal</b></td><td>Kestabilan kerajaan negeri BN pimpinan Onn Hafiz; keruntuhan struktur PN pasca-2022 (ketegangan PAS-BERSATU, ILHAM Centre); kemunculan parti serpihan (BERSAMA) menambah kerumitan medan pertandingan bukan-BN.</td></tr>
+<tr><td><b>Ekonomi</b></td><td>Naratif prestasi ekonomi Johor (RTS, Data Centre, JS-SEZ) digunakan sebagai aset kempen BN (ILHAM Centre); isu kos sara hidup, pekerjaan dan mobiliti ke Singapura menjadi keutamaan pengundi merentas kaum.</td></tr>
+<tr><td><b>Sosial</b></td><td>Jurang turnout kaum menyempit; anjakan demografi pengundi baharu pro-Melayu; pengundi muda semakin candidate-centric dan late-decider (ILHAM Centre); polarisasi sokongan mengikut komposisi etnik kekal tinggi.</td></tr>
+<tr><td><b>Teknologi</b></td><td>Peranan platform data/analitik pilihan raya (pilihanraya.my, iprom.org), tinjauan lapangan formal (ILHAM Centre) dan media sosial (TikTok, Facebook) sebagai saluran pembentukan naratif yang kuat.</td></tr>
+<tr><td><b>Perundangan</b></td><td>Peraturan tempoh kempen 14 hari dan tempoh 60 hari pembubaran-ke-pilihan raya menetapkan kekangan masa kempen yang sama untuk semua pihak — memberi kelebihan kepada penyandang yang sudah lama bekerja di kawasan (ILHAM Centre).</td></tr>
+<tr><td><b>Alam Sekitar</b></td><td>Tiada isu alam sekitar disebut secara eksplisit dalam mana-mana sumber.</td></tr>
+</table>
+</section>
+
+<!-- 29 5 WHYS -->
+<section class="section" id="5whys">
+<h2><span class="num">29</span>Five Whys Analysis — Mengapa PH Kehilangan Kerusi Walaupun Undi Bertambah?</h2>
+<ol>
+<li><b>Mengapa 1:</b> Mengapa PH kehilangan 4–5 kerusi walaupun undi PH meningkat 47.3%? <br><i>Kerana</i> jumlah undi sah negeri berkembang lebih pantas (34.8%) dan sebahagian besar pertumbuhan itu mengalir kepada BN.</li>
+<li><b>Mengapa 2:</b> Mengapa pertumbuhan undi negeri banyak mengalir kepada BN? <br><i>Kerana</i> 36–45% daripada tambahan undi BN datang daripada takungan bekas penyokong PN yang runtuh — disokong dapatan kualitatif ILHAM Centre mengenai sokongan taktikal PAS.</li>
+<li><b>Mengapa 3:</b> Mengapa takungan PN mengalir kepada BN dan bukan PH? <br><i>Kerana</i> pengundi PN secara majoritinya Melayu, dan sokongan PH secara struktur hampir tulen fungsi komposisi Cina (R²=0.95).</li>
+<li><b>Mengapa 4:</b> Mengapa sokongan PH begitu terikat kepada komposisi Cina, dan turnout Cina sendiri gagal mencecah paras yang diperlukan? <br><i>Kerana</i> menurut ILHAM Centre, pengundi Cina "tawar hati" dengan prestasi PH dan PH gagal membina naratif tempatan/isu bread-and-butter yang meyakinkan berbanding sekadar bergantung kepada karisma Perdana Menteri dan pencapaian PRU-15.</li>
+<li><b>Mengapa 5 (Punca Akar):</b> Mengapa PH gagal membaca bahawa "setting" PRN memerlukan pendekatan berbeza daripada PRU? <br><i>Data kuantitatif tidak mencukupi untuk menjawab ini secara muktamad</i> — ILHAM Centre mencadangkan ini punca strategik dalaman (perancangan kempen, pemilihan tema, bacaan landskap), tetapi penjelasan penuh memerlukan kajian kualitatif tambahan dalaman parti yang berada di luar skop kelima-lima sumber data yang dianalisis.</li>
+</ol>
+</section>
+
+<!-- 30 LESSONS LEARNED -->
+<section class="section" id="lessons">
+<h2><span class="num">30</span>Lessons Learned — Iktibar Untuk PRN Negeri Sembilan (1 Ogos 2026)</h2>
+<div class="callout warn">Amaran kaedah: PRN Negeri Sembilan 2023 adalah pilihan raya <b>pakatan PH+BN</b> menentang PN — asas perbandingannya berbeza secara struktur daripada PRN Johor 2022.</div>
+<ol>
+<li><b>Hari penamaan calon ialah maklumat paling bernilai.</b> Kira berapa kerusi PN <i>tidak</i> bertanding.</li>
+<li><b>Jangkakan turnout ~70%, bukan paras PRN lama.</b></li>
+<li><b>Perhatikan geografi turnout Cina, bukan sekadar "peralihan undi Cina".</b> ILHAM Centre: sasarkan ambang turnout minimum ~65% sebagai penanda aras operasi mobilisasi di setiap kerusi bandar/separa bandar.</li>
+<li><b>Kerusi campuran PH marginal adalah mangsa pertama</b> jika corak Johor berulang.</li>
+<li><b>Semak komposisi daftar pemilih baharu.</b></li>
+<li><b>Elak membuat ramalan muktamad bagi kerusi dalam jurang ~1 mata peratus.</b></li>
+<li><b>Beri perhatian khusus kepada kerusi tanpa asas perbandingan yang jelas.</b></li>
+<li><b>Elak strategi serangan peribadi berlebihan terhadap pemimpin lawan yang popular.</b></li>
+<li><b>Elak kenyataan bertaruh tinggi/bersyarat oleh pemimpin kanan.</b></li>
+<li><b>Bina naratif "setting negeri" yang berdiri sendiri, bukan sambungan PRU.</b> Iktibar terpenting ILHAM Centre: elakkan menjadikan pencapaian PRU-15 sebagai garis dasar jangkaan PRN — bina tema tempatan (isu bread-and-butter) yang tidak bergantung kepada populariti pemimpin persekutuan.</li>
+<li><b>Mulakan ground work calon lebih awal.</b> ILHAM Centre mendapati calon yang lebih awal bekerja di kawasan mempunyai kelebihan ketara berbanding calon baharu yang hanya bergerak selepas penamaan calon, memandangkan tempoh kempen yang singkat (14 hari).</li>
+<li><b>Sasarkan segmen "late decider" (~17% pengundi) menjelang minggu akhir kempen</b> menerusi komunikasi calon dan media sosial, memandangkan kumpulan ini (didominasi pengundi muda) menentukan keputusan di kerusi sengit.</li>
+</ol>
+</section>
+
+<!-- 31 CADANGAN PENAMBAHBAIKAN -->
+<section class="section" id="cadangan1">
+<h2><span class="num">31</span>Cadangan Penambahbaikan</h2>
+<ul>
+<li><b>Bina jentera AMANAH/PKR di kerusi campuran</b> — nisbah menang semasa (<6%) tidak boleh diterima.</li>
+<li><b>Bangunkan mesej yang tidak bergantung sepenuhnya kepada komposisi Cina</b> — kembangkan isu dasar sejagat (kos sara hidup, pekerjaan, perumahan) yang relevan merentasi kaum.</li>
+<li><b>Wujudkan protokol komunikasi krisis untuk kenyataan pemimpin kanan.</b></li>
+<li><b>Perkukuh analitik dalaman berasaskan data</b> — gabungan tinjauan lapangan (seperti kaedah ILHAM Centre) dan model statistik pasca-pilihan raya (seperti pilihanraya.my) terbukti saling mengesahkan dan perlu dijadikan amalan standard, bukan bergantung kepada satu kaedah sahaja.</li>
+<li><b>Perhatikan ambang pendaftaran pengundi baharu</b> — laksanakan program pendaftaran/pendidikan pengundi disasarkan kepada segmen bukan-Melayu muda.</li>
+<li><b>Sediakan data candidate-level lengkap untuk kajian post-mortem akan datang.</b></li>
+<li><b>Lantik calon dan mulakan pengenalan diri lebih awal</b> sebelum tempoh kempen rasmi, khususnya di kerusi sengit/marginal.</li>
+</ul>
+</section>
+
+<!-- 32 CADANGAN STRATEGI -->
+<section class="section" id="cadangan2">
+<h2><span class="num">32</span>Cadangan Strategi PRU/PRN Akan Datang</h2>
+<h3>Untuk Negeri Sembilan (1 Ogos 2026)</h3>
+<ul>
+<li>Pantau ketat senarai calon PN selepas penamaan (18 Julai).</li>
+<li>Tumpukan sumber jentera kepada kerusi campuran marginal.</li>
+<li>Sediakan mesej "reassurance" berkaitan kredibiliti calon AMANAH/PKR di kerusi Melayu majoriti.</li>
+<li>Tetapkan sasaran turnout Cina eksplisit (~65%+) sebagai KPI operasi mobilisasi harian sepanjang kempen, berdasarkan ambang kritikal yang dikenal pasti ILHAM Centre.</li>
+<li>Bina tema kempen negeri yang berdiri sendiri (bukan sekadar sambungan jenama persekutuan) — libatkan tinjauan awal (seperti kaedah ILHAM) untuk mengesan tema yang paling bergema sebelum kempen bermula.</li>
+</ul>
+<h3>Untuk Melaka dan PRU Akan Datang (Umum)</h3>
+<ul>
+<li>Bina model swing khusus setiap negeri.</li>
+<li>Wujudkan unit analitik pilihan raya dalaman PH yang menggabungkan tinjauan lapangan pra-pilihan raya (kaedah ILHAM Centre) dengan inferens ekologi pasca-pilihan raya (kaedah pilihanraya.my) sebagai piawaian standard, bukan bergantung kepada sensasi media sosial.</li>
+<li>Bina "peta ancaman kubu" tahunan berdasarkan ambang crossover demografi.</li>
+<li>Latih jurucakap kanan mengenai disiplin komunikasi kenyataan bersyarat/taruhan tinggi.</li>
+<li>Wujudkan mekanisme pemantauan sentimen "late decider" mingguan sepanjang tempoh kempen, memandangkan kumpulan ini boleh mencecah 17% pengundi dan menentukan kerusi sengit pada saat akhir.</li>
+</ul>
+</section>
+
+<!-- 33 KESIMPULAN -->
+<section class="section" id="kesimpulan">
+<h2><span class="num">33</span>Kesimpulan</h2>
+<p>PRN Johor 2026 mencatatkan salah satu kemenangan terbesar BN dalam sejarah moden negeri berkenaan — 48 daripada 56 kerusi, penyapuan bersih PN, dan lonjakan turnout 15 mata peratus. Namun di sebalik angka permukaan 48-8 yang kelihatan seperti penolakan menyeluruh terhadap PH, data menunjukkan gambaran yang lebih bernuansa: <b>PH sebenarnya menambah hampir 200,000 undi</b>, dan <b>kemenangan besar BN didorong terutamanya oleh penyerapan hampir keseluruhan takungan bekas penyokong PN</b>, bukan gelombang sokongan baharu yang tulen kepada BN itu sendiri.</p>
+<p>Penggabungan tinjauan lapangan pra-pilihan raya ILHAM Centre dengan analisis statistik pasca-pilihan raya pilihanraya.my menghasilkan gambaran yang jauh lebih kukuh berbanding mana-mana sumber tunggal: kedua-dua kaedah — walaupun sepenuhnya berbeza dari segi masa dan metodologi — bertemu pada kesimpulan yang sama mengenai keruntuhan PN, ambang kritikal turnout Cina, populariti peribadi Onn Hafiz, dan kegagalan PH membaca "setting" PRN yang berbeza daripada PRU. Ini memberi keyakinan tambahan bahawa dapatan teras laporan ini bukan artifak satu kaedah semata-mata.</p>
+<p>Bagi Pakatan Harapan, dapatan paling kritikal ialah: sokongan parti kekal hampir sepenuhnya terikat kepada komposisi pengundi Cina bandar (R²=0.95), manakala usaha meluas ke kerusi campuran dan Melayu majoriti (melalui AMANAH dan PKR) masih gagal membuahkan hasil (nisbah menang <6%). Sehingga jurang ini dapat dirapatkan, PH kekal terdedah kepada dinamik yang sama pada setiap PRN akan datang — termasuk Negeri Sembilan dan Melaka.</p>
+<p>Laporan ini disediakan sebagai dokumen rujukan utama bagi pasukan strategi PH menghadapi kitaran pilihan raya seterusnya, dengan penekanan bahawa setiap dapatan dilabel mengikut tahap keyakinan statistiknya (pemerhatian, anggaran, simulasi, atau tinjauan pra-PRN) bagi mengelakkan kesimpulan strategik dibuat atas asas yang lebih lemah daripada yang sepatutnya.</p>
+</section>
+
+<!-- METODOLOGI -->
+<section class="section" id="metodologi">
+<h2>Lampiran · Nota Kaedah</h2>
+<p>Setiap angka dalam laporan ini termasuk dalam salah satu daripada empat kelas:</p>
+<ul>
+<li><span class="source-tag obs">PEMERHATIAN</span> — angka rasmi SPR atau kiraan aritmetik terus daripadanya. Ini fakta.</li>
+<li><span class="source-tag est">ANGGARAN</span> — inferens statistik daripada agregat 56 kerusi (pilihanraya.my). Kaedah ini — <i>inferens ekologi</i> — tidak dapat memerhati tingkah laku individu.</li>
+<li><span class="source-tag sim">SIMULASI</span> — tetapan model yang menghasilkan semula keputusan rasmi (simulator dalaman pilihanraya.my).</li>
+<li><span class="source-tag survey">TINJAUAN PRA-PRN</span> — kaji selidik lapangan, FGD dan IDI ILHAM Centre yang dijalankan <i>sebelum</i> hari mengundi (26 Jun–9 Julai 2026, n=1,250, ralat 2.77%). Dapatan ini meramal tingkah laku dan sentimen, bukan keputusan sebenar, dan perlu dibaca sebagai hipotesis yang disahkan/tidak disahkan oleh keputusan rasmi (lihat Seksyen 02A untuk rekod penuh ketepatan ramalan).</li>
+</ul>
+<p>Tiga analisis bebas (turnout × corak undi × keruntuhan PN), apabila digabungkan, meramal tambahan undi BN sekitar 445,000 berbanding 519,000 sebenar — baki ~15%. Secara berasingan, tinjauan pra-pilihan raya ILHAM Centre meramal BN mendahului 39 kerusi (berbanding 48 sebenar) — kedua-dua kaedah meremehkan magnitud kemenangan BN tetapi tepat dari segi arah, menunjukkan corak sistemik: keseluruhan medan peramal (kaji selidik mahupun model statistik) secara konsisten memandang rendah skala pergerakan undi PN→BN sebelum keputusan sebenar diketahui.</p>
+
+<h3>Medan Ramalan (Prediction Field) — pilihanraya.my</h3>
+<p>163 penyertaan ramalan diskor pada platform pilihanraya.my. Ramalan purata BN 36.6 kerusi berbanding keputusan sebenar 48; hanya 2 daripada 163 penyertaan meramal BN ≥48 kerusi. Kumpulan keyakinan 86–100 (71% daripada semua ramalan) menyatakan keyakinan 98.0 tetapi hanya direalisasikan 84.1.</p>
+
+<h3>Kesesuaian Simulator (Inverse-Fit)</h3>
+<p>Menyesuaikan semula 13 parameter enjin simulasi kepada keputusan rasmi (~28,500 penilaian): kesesuaian terbaik yang dapat dinyatakan — 55/56 pemenang tepat, MAE bahagian 3.18 mata. Satu kesilapan yang tidak dapat dielakkan: N.41 Puteri Wangsa (MUDA menang 2022, asas PH di situ sifar).</p>
+
+<h3>Kerapuhan Keputusan (Fragility)</h3>
+<ul>
+<li>795 undi tambahan BN yang diagihkan tepat ke N.13 Simpang Jeram dan N.45 Stulang menghasilkan 50-6.</li>
+<li>Memindahkan kesemua 3,817 undi BERSAMA di N.46 Perling dan N.51 Bukit Batu kepada PH menghasilkan 46-10.</li>
+<li>Dua kerusi (N.13, N.51) ditentukan oleh majoriti lebih kecil daripada bilangan undi rosak masing-masing.</li>
+<li>36 daripada 48 calon pencabar hilang wang pertaruhan (PN 21/33, BERSAMA 15/15).</li>
+</ul>
+<p class="footnote">Sumber data: SPR Rasmi; keputusan penuh PRN15 2022; jadual ramalan pilihanraya.my (163 diskor); enjin PRN inverse-fit (~28,500 penilaian); tinjauan lapangan ILHAM Centre (26 Jun–9 Jul 2026, n=1,250).</p>
+</section>
+
+<!-- SUMBER -->
+<section class="section" id="sumber">
+<h2>Sumber &amp; Rujukan</h2>
+<ul>
+<li>pilihanraya.my — <a href="https://pilihanraya.my/johor/post-mortem" target="_blank">Post-Mortem PRN-16 Johor 2026: Anatomi Kemenangan 48-8</a> (BM, 12 Jul 2026)</li>
+<li>pilihanraya.my — <a href="https://pilihanraya.my/johor/post-mortem/technical" target="_blank">Johor PRN-16 Post-Mortem — Technical Annex</a> (EN, 12 Jul 2026)</li>
+<li>iprom.org — <a href="keputusanprnjohor2026.html" target="_blank">PRN Johor 2026 — Election Intelligence Hub</a>, disediakan oleh Dr. Zaipul Anwar, OrenIT Amanah Nasional (Sumber: Keputusan Rasmi SPR, 11 Jul 2026)</li>
+<li>ILHAM Centre — <a href="https://ilhamcentre.my/report/prn-johor-2026-bn-melepasi-dua-pertiga-majoriti/" target="_blank">PRN Johor 2026: BN Melepasi Dua Pertiga Majoriti</a> (tinjauan pra-pilihan raya, dapatan lapangan 26 Jun–9 Jul 2026)</li>
+<li>Facebook — <a href="https://www.facebook.com/Muhamadharrisnasril/posts/pfbid0pqr3a8n4HZg4mMJUrWnTHgKvdahn5QWikTPdNPwXptEPq8cwCi7sdkLP8puxg561l" target="_blank">Hantaran Muhamad Harris Nasril</a>, "'THE BIGGEST WINNER' DAN 'THE BIGGEST LOSER' PRN JOHOR" (12 Jul 2026)</li>
+<li>Carian tambahan (latar belakang &amp; pengesahan tarikh): Wikipedia BM "Pilihan raya negeri Johor 2026"; Wikipedia EN "2026 Johor state election"; The Star; New Straits Times; Free Malaysia Today; Bloomberg; Malaysiakini; Bernama; utc.my; pekhabar.com</li>
+</ul>
+</section>
+
+<footer class="rpt">
+Post-Mortem PRN-16 Negeri Johor 2026 — disediakan untuk PH Political Intelligence Hub (Johor · Negeri Sembilan · Melaka). Dokumen ini menggabungkan data pemerhatian rasmi, anggaran statistik inferens ekologi, tinjauan lapangan pra-pilihan raya, dan naratif media sosial; setiap dapatan dilabel mengikut tahap keyakinan. Bukan dokumen rasmi SPR. Disediakan 13 Julai 2026.
+</footer>
+
+</main>
+</div>
+
+<script>
+// Togol menu kandungan untuk paparan telefon pintar
+(function(){
+  var nav = document.getElementById('tocNav');
+  var btn = document.getElementById('tocToggleBtn');
+  var label = document.getElementById('tocToggleLabel');
+  if(btn && nav){
+    btn.addEventListener('click', function(){
+      var isOpen = nav.classList.toggle('open');
+      label.textContent = isOpen ? 'Tutup Menu ✕' : 'Kandungan / Menu';
+    });
+    var links = nav.querySelectorAll('.links a');
+    for(var i=0;i<links.length;i++){
+      links[i].addEventListener('click', function(){
+        nav.classList.remove('open');
+        label.textContent = 'Kandungan / Menu';
+      });
+    }
+  }
+})();
+
+const navy='#0b1f3a', bnBlue='#1c4f9c', phRed='#c0392b', pnGreen='#1e7a4a', bersamaP='#7a4fa3', gold='#b8902e', muted='#8a94a3';
+Chart.defaults.font.family="Segoe UI, Tahoma, sans-serif";
+Chart.defaults.color = '#3a4150';
+Chart.defaults.maintainAspectRatio = false;
+Chart.defaults.responsive = true;
+
+new Chart(document.getElementById('chartSeats'), {
+  type:'doughnut',
+  data:{labels:['BN (48)','PH (8)'],datasets:[{data:[48,8],backgroundColor:[bnBlue,phRed]}]},
+  options:{plugins:{title:{display:true,text:'Kerusi Dimenangi Mengikut Parti — PRN 2026 (56 DUN)',font:{size:14}},legend:{position:'bottom'}}}
+});
+
+new Chart(document.getElementById('chartVotesVsSeats'), {
+  type:'bar',
+  data:{labels:['BN','PH','PN','BERSAMA'],
+    datasets:[
+      {label:'% Undi',data:[59.66,32.64,5.45,1.54],backgroundColor:gold},
+      {label:'% Kerusi',data:[85.7,14.3,0,0],backgroundColor:navy}
+    ]},
+  options:{plugins:{title:{display:true,text:'Undi vs Kerusi (%) — Ketaksamaan FPTP',font:{size:14}}},scales:{y:{beginAtZero:true,max:100}}}
+});
+
+new Chart(document.getElementById('chartPartyChange'), {
+  type:'bar',
+  data:{labels:['UMNO','MCA','MIC','DAP','AMANAH','PKR','BERSATU','PAS'],
+    datasets:[
+      {label:'Undi 2022',data:[406997,154922,37834,181455,103514,82556,197913,89744],backgroundColor:'#aab4c4'},
+      {label:'Undi 2026',data:[766262,274786,77511,291273,165777,154933,46072,45934],backgroundColor:function(ctx){
+        const bnSet=['UMNO','MCA','MIC']; const phSet=['DAP','AMANAH','PKR'];
+        const lbl=ctx.chart.data.labels[ctx.dataIndex];
+        if(bnSet.includes(lbl)) return bnBlue; if(phSet.includes(lbl)) return phRed; return pnGreen;
+      }}
+    ]},
+  options:{plugins:{title:{display:true,text:'Perubahan Undi Parti Komponen: 2022 vs 2026',font:{size:14}}},scales:{y:{beginAtZero:true}}}
+});
+
+new Chart(document.getElementById('chartMarginRank'), {
+  type:'bar',
+  data:{labels:['Bukit Batu','Simpang Jeram','Stulang','Perling','Jementah','Puteri Wangsa','Senai','Maharani','Penggaram','Mengkibol'],
+    datasets:[{label:'Majoriti (%)',data:[0.5,0.6,1.7,2.4,3.4,6.7,7.8,7.9,9.2,9.7],
+      backgroundColor:['#c0392b','#1c4f9c','#c0392b','#1c4f9c','#1c4f9c','#c0392b','#c0392b','#1c4f9c','#c0392b','#c0392b']}]},
+  options:{indexAxis:'y',plugins:{title:{display:true,text:'10 Kerusi Paling Kompetitif (Majoriti %)',font:{size:14}},legend:{display:false}}}
+});
+
+new Chart(document.getElementById('chartChinesePH'), {
+  type:'scatter',
+  data:{datasets:[{label:'Kerusi DUN (anggaran komposisi Cina vs % undi PH)',
+    data:[{x:15,y:8},{x:20,y:12},{x:25,y:18},{x:30,y:20},{x:35,y:28},{x:40,y:33},{x:44,y:44},{x:48,y:45},{x:51.6,y:50},{x:53,y:52},{x:56,y:39},{x:58,y:58},{x:60,y:60},{x:65,y:63},{x:70,y:68}],
+    backgroundColor:phRed, pointRadius:6}]},
+  options:{plugins:{title:{display:true,text:'Komposisi Cina (%) vs % Undi PH — R²=0.95 (ilustrasi corak)',font:{size:13}}},
+    scales:{x:{title:{display:true,text:'% Komposisi Pengundi Cina (anggaran)'}},y:{title:{display:true,text:'% Undi PH'}}}}
+});
+
+new Chart(document.getElementById('chartSankeyApprox'), {
+  type:'bar',
+  data:{labels:['PN 2022→BN (anggaran)','PN 2022→Tinggal PN/Lain','BN Teras Sedia Ada','PH Pertumbuhan Organik'],
+    datasets:[{label:'Undi (anggaran/pemerhatian)',data:[220000,114457,598244,196386],
+      backgroundColor:[bnBlue,pnGreen,'#7f93b8',phRed]}]},
+  options:{plugins:{title:{display:true,text:'Anggaran Komponen Perubahan Undi 2022→2026',font:{size:14}},legend:{display:false}},indexAxis:'y'}
+});
+
+new Chart(document.getElementById('chartCompare2022'), {
+  type:'line',
+  data:{labels:['PRN15 (Mac 2022)','PRU15 (Nov 2022)','PRN16 (Jul 2026)'],
+    datasets:[
+      {label:'BN',data:[599753,598244,1118559],borderColor:bnBlue,backgroundColor:bnBlue,tension:.2},
+      {label:'Keluarga PH',data:[415597,825182,622219],borderColor:phRed,backgroundColor:phRed,tension:.2},
+      {label:'PN',data:[334457,519661,102090],borderColor:pnGreen,backgroundColor:pnGreen,tension:.2}
+    ]},
+  options:{plugins:{title:{display:true,text:'Trend Undi Merentasi Tiga Pilihan Raya (Satu Badan Pengundi)',font:{size:14}}}}
+});
+</script>
+</body>
+</html>
